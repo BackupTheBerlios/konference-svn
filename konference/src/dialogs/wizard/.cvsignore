@@ -1,0 +1,7 @@
+Makefile
+Makefile.in
+Makefile.rules.in
+page1layout.cpp
+page1layout.h
+page2layout.cpp
+page2layout.h

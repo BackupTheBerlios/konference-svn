@@ -1,0 +1,16 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="konference_part" version="1">
+<MenuBar>
+	<Menu name="settings"><text>&amp;Settings</text>
+		<Action name="wizard"/>
+		<Action name="config"/>
+		<!-- <Action name="show-test-toolbar"/> -->
+	</Menu>
+</MenuBar>
+
+<ToolBar name="mainToolBar" fullWidth="1"><text>Main Toolbar</text>
+	<Action name="location"/>
+	<Action name="connect"/>
+	<Action name="stop"/>
+</ToolBar>
+</kpartgui>

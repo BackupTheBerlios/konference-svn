@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE kcfg SYSTEM "http://www.kde.org/standards/kcfg/1.0/kcfg.dtd">
+<kcfg> <kcfgfile name="konferencerc"/>
+	<group name="general">
+		
+		<entry name="completitionList" type="StringList">
+		</entry>
+
+		<entry name="historyList" type="StringList">
+		</entry>
+
+	</group>
+<group name="audio">
+		<entry name="outputDevice" type="String">
+		</entry>
+
+		<entry name="audioPlugin" type="String">
+		</entry>
+
+		<entry name="outputMute" type="Bool">
+		<default>false</default>
+		</entry>
+
+		<entry name="inputDevice" type="String">
+		</entry>
+
+		<entry name="inputMute" type="Bool">
+		<default>false</default>
+		</entry>
+
+		<entry name="audioCodecs" type="StringList">
+		</entry>
+
+		<entry name="minJitter" type="Int">
+		<default>20</default>
+		</entry>
+
+		<entry name="maxJitter" type="Int">
+		<default>1000</default>
+		</entry>
+
+		<entry name="silenceDetection" type="Bool">
+		<default>false</default>
+		</entry>
+
+	</group>
+
+	<group name="video">
+		<entry name="videoDevice" type="String">
+		<default>/dev/video0</default>
+		</entry>
+
+		<entry name="fakeDeviceImage" type="Path">
+		<default>$KDEDIR/share/apps/konferencepart/splash.png</default>
+		</entry>
+
+		<entry name="videoReception" type="Bool">
+		<default>true</default>
+		</entry>
+
+		<entry name="videoTransmission" type="Bool">
+		<default>true</default>
+		</entry>
+
+		<entry name="useH263" type="Bool">
+		<default>false</default>
+		</entry>
+
+		<entry name="maxVideoBandwidth" type="Int">
+		<default>4</default>
+		</entry>
+
+		<entry name="minTransmitFps" type="Int">
+		<default>2</default>
+		</entry>
+
+		<entry name="transmittedBackgroundBlocks" type="Int">
+		<default>1</default>
+		</entry>
+
+		<entry name="transmitQuality" type="Int">
+		<default>1</default>
+		</entry>
+
+		<entry name="receiveQuality" type="Int">
+		<default>1</default>
+		</entry>
+
+		<entry name="colorFormat" type="String">
+		<default>YUV420P</default>
+		</entry>
+
+		<entry name="videoChannel" type="Int">
+		<default>0</default>
+		</entry>
+
+		<entry name="videoSize" type="Enum">
+		<label>Video size</label>
+		<choices>
+			<choice name="QCIF"/>
+			<choice name="CIF"/>
+		</choices>
+		</entry>
+
+		<entry name="videoFormat" type="Int">
+		<label>Video size</label>
+		<choices>
+			<choice name="Auto"/>
+			<choice name="PAL"/>
+			<choice name="NTSC"/>
+			<choice name="SECAM"/>
+		</choices>
+		</entry>
+		
+		<entry name="brightness" type="Int">
+		<default>1</default>
+		</entry>
+		
+		<entry name="color" type="Int">
+		<default>1</default>
+		</entry>
+		
+		<entry name="contrast" type="Int">
+		<default>1</default>
+		</entry>
+		
+		<entry name="hue" type="Int">
+		<default>1</default>
+		</entry>
+	</group>
+
+<group name="personal">
+		<entry name="name" type="String">
+		<label>Firstname of the user</label>
+		<whatsthis>Firstname of the user</whatsthis>
+		</entry>
+
+		<entry name="email" type="String">
+		<label>E-Mail adress of the user</label>
+		<whatsthis>E-Mail adress of the user</whatsthis>
+		</entry>
+
+		<entry name="location" type="String">
+		<label>Location of the user</label>
+		<whatsthis>Location of the user</whatsthis>
+		</entry>
+
+		<entry name="comment" type="String">
+		<label>A short comment about the user</label>
+		<whatsthis>A short comment about the user</whatsthis>
+		<default>test</default>
+		</entry>
+	</group>
+
+	<group name="connection">
+		<entry name="localAudioPort" type="Int">
+		<default>21232</default>
+		</entry>
+		
+		<entry name="localVideoPort" type="Int">
+		<default>21234</default>
+		</entry>
+	</group>
+	
+	<group name="view">
+		<entry name="mirrorVertical" type="Bool">
+		<default>false</default>
+		</entry>
+		
+		<entry name="mirrorHorizontal" type="Bool">
+		<default>false</default>
+		</entry>
+	</group>
+</kcfg>

@@ -1,0 +1,5 @@
+File=konference.kcfg
+ClassName=KonferenceSettings
+Singleton=true
+ItemAccessors=true
+Mutators=true
