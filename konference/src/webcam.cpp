@@ -49,6 +49,8 @@ Webcam::Webcam(QWidget *parent, QWidget *localVideoWidget)
 	wcFormat = 0;
 	wcFlip = false;
 
+	m_isOpen = false;
+
 	(void)parent;
 	(void)localVideoWidget;
 	vCaps.name[0] = 0;
@@ -161,6 +163,7 @@ bool Webcam::camOpen(QString WebcamName, int width, int height)
 
 		StartThread();
 	}
+	m_isOpen = opened; // m_isOpen is used in isOpen()
 	return opened;
 }
 
@@ -183,6 +186,8 @@ void Webcam::camClose()
 		delete picbuff1;
 
 	picbuff1 = 0;
+
+	m_isOpen = false;
 }
 
 
@@ -560,15 +565,18 @@ void Webcam::ProcessFrame(unsigned char *frame, int fSize)
 			// Get a buffer for the frame. If no "free" buffers try and reused an old one
 			unsigned char *buffer = it->BufferList.first();
 			//buffer = it->BufferList.first();
-			if (buffer == 0)
-				buffer = it->FullBufferList.first();
 
 			if (buffer != 0)
 			{
 				it->BufferList.remove(buffer);
 				it->FullBufferList.append(buffer);
-				it->framesDelivered++;
+			}
+			else
+				buffer = it->FullBufferList.first();
 
+			if (buffer != 0)
+			{
+				it->framesDelivered++;
 				// Format conversion
 				if (wcFormat != it->format)
 				{
