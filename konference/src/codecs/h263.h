@@ -27,19 +27,18 @@ extern "C" {
 #define MAX_RGB_704_576     (704*576*4)
 #define MAX_YUV_704_576     (800*576*3/2) // Add a little onto the width in case the stride is bigger than the width
 
-
 // Declare static YUV and RGB handling fns.
 void YUV422PtoYUV420P(int width, int height, unsigned char *image);
 void RGB24toRGB32(const unsigned char *rgb24, unsigned char *rgb32, int len);
 void YUV422PtoRGB32(int width, int height, const unsigned char *src, unsigned char *dst, int dstSize);
-void YUV420PtoRGB32(const uchar *py, const uchar *pu, const uchar *pv, int width, int height, int stride, unsigned char *dst, int dstSize);
+void YUV420PtoRGB32(const unsigned char *py, const unsigned char *pu, const unsigned char *pv, int width, int height, int stride, unsigned char *dst, int dstSize);
 void YUV420PtoRGB32(int width, int height, int stride, const unsigned char *src, unsigned char *dst, int dstSize);
-void scaleYuvImage(const uchar *yuvBuffer, int ow, int oh, int dw, int dh, uchar *dst);
-void cropYuvImage(const uchar *yuvBuffer, int ow, int oh, int cx, int cy, int cw, int ch, uchar *dst);
-void flipRgb32Image(const uchar *rgbBuffer, int w, int h, uchar *dst);
-void flipYuv420pImage(const uchar *yuvBuffer, int w, int h, uchar *dst);
-void flipYuv422pImage(const uchar *yuvBuffer, int w, int h, uchar *dst);
-void flipRgb24Image(const uchar *rgbBuffer, int w, int h, uchar *dst);
+void scaleYuvImage(const unsigned char *yuvBuffer, int ow, int oh, int dw, int dh, unsigned char *dst);
+void cropYuvImage(const unsigned char *yuvBuffer, int ow, int oh, int cx, int cy, int cw, int ch, unsigned char *dst);
+void flipRgb32Image(const unsigned char *rgbBuffer, int w, int h, unsigned char *dst);
+void flipYuv420pImage(const unsigned char *yuvBuffer, int w, int h, unsigned char *dst);
+void flipYuv422pImage(const unsigned char *yuvBuffer, int w, int h, unsigned char *dst);
+void flipRgb24Image(const unsigned char *rgbBuffer, int w, int h, unsigned char *dst);
 
 
 class H263Container
@@ -50,8 +49,8 @@ class H263Container
 
     bool H263StartEncoder(int w, int h, int fps);
     bool H263StartDecoder(int w, int h);
-    uchar *H263EncodeFrame(const uchar *yuvFrame, int *len);
-    uchar *H263DecodeFrame(const uchar *h263Frame, int h263FrameLen, uchar *rgbBuffer, int rgbBufferSize);
+    unsigned char *H263EncodeFrame(const unsigned char *yuvFrame, int *len);
+    unsigned char *H263DecodeFrame(const unsigned char *h263Frame, int h263FrameLen, unsigned char *rgbBuffer, int rgbBufferSize);
     void H263StopEncoder();
     void H263StopDecoder();
 

@@ -75,6 +75,8 @@ protected:
 	virtual bool openFile(){return false;};
 
 protected slots:
+	void newFrame();
+	
 	/**
 	 * Creates and shows the configuration dialog for global options
 	 */
