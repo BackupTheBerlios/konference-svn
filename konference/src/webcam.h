@@ -100,6 +100,7 @@ public:
 	static QString devName(QString WebcamName);
 	bool camOpen(QString WebcamName, int width, int height);
 	void camClose(void);
+	bool isOpen(){return m_isOpen;};
 	bool SetPalette(unsigned int palette);
 	unsigned int GetPalette(void);
 	int  SetBrightness(int v);
@@ -153,6 +154,8 @@ private:
 	int wcFormat;
 	bool wcFlip;
 
+	bool m_isOpen;
+	
 	QTime cameraTime;
 	int frameCount;
 	int totalCaptureMs;
