@@ -41,7 +41,7 @@
 #include <net/if.h>
 #include <linux/sockios.h>
 #include <linux/videodev.h>
-#include <mythtv/mythcontext.h>
+//#include <mythtv/mythcontext.h>
 #include "config.h"
 #endif
 

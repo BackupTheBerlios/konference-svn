@@ -145,9 +145,7 @@
     <dest>/home/maldn/projekte/konference</dest>
   </substmap>
   <kdevcppsupport>
-    <references>
-      <pcs>KDElibs</pcs>
-    </references>
+    <references/>
     <codecompletion>
       <includeGlobalFunctions>true</includeGlobalFunctions>
       <includeTypes>true</includeTypes>
