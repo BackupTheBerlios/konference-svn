@@ -79,7 +79,7 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 		KMessageBox::error(0,"error opening the webcam. expect things to crash...");
 	
 	//lets see if the webcam opened at the desired size.
-	if(m_webcam->width() != w || m_webcam->height() != h)
+	if(m_webcam->isOpen() && (m_webcam->width() != w || m_webcam->height() != h))
 		KMessageBox::error(0,QString("webcam opened at %1x%2 instead of the requested %3x%4").arg(m_webcam->width()).arg(m_webcam->height()).arg(h).arg(w));
 	//m_webcam->camOpen(KonferenceSettings::videoDevice(), 352, 288);
 
