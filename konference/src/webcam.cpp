@@ -37,7 +37,7 @@ using namespace std;
 #include "webcam.h"
 
 
-Webcam::Webcam(QWidget *parent, QWidget *localVideoWidget)
+Webcam::Webcam(QObject *parent)
 {
 	hDev = 0;
 	DevName = "";
@@ -50,9 +50,9 @@ Webcam::Webcam(QWidget *parent, QWidget *localVideoWidget)
 	wcFlip = false;
 
 	m_isOpen = false;
-
+	m_isFake = false;
+	
 	(void)parent;
-	(void)localVideoWidget;
 	vCaps.name[0] = 0;
 	vCaps.maxwidth = 0;
 	vCaps.maxheight = 0;
@@ -164,6 +164,23 @@ bool Webcam::camOpen(QString WebcamName, int width, int height)
 		StartThread();
 	}
 	m_isOpen = opened; // m_isOpen is used in isOpen()
+	
+	//image-fallback
+	//TODO this is a ugly hack that doesnt belong here
+	if(!opened)
+	{
+		m_isFake = true;
+		//opened = true;
+		
+		//create grey color and construct a qimage with that color
+		QColor *tmpcolor = new QColor(50,50,50);
+		m_fakeImage = new QImage(352,288,32);
+		m_fakeImage->fill(tmpcolor->rgb());
+		//we are rgb32
+		m_fakeFrame = new unsigned char [RGB32_LEN(352,288)];
+		
+	}
+	
 	return opened;
 }
 

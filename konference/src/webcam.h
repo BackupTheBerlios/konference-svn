@@ -28,6 +28,7 @@
 #include <qptrlist.h>
 #include <qthread.h>
 #include <qdatetime.h>
+#include <qimage.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -93,7 +94,7 @@ class Webcam : public QThread
 
 public:
 
-	Webcam(QWidget *parent=0, QWidget *localVideoWidget=0);
+	Webcam(QObject *parent=0);
 	virtual ~Webcam(void);
 	virtual void run();
 
@@ -155,6 +156,10 @@ private:
 	bool wcFlip;
 
 	bool m_isOpen;
+	///true if we are providing an image from a file instead of video from a cam
+	bool m_isFake;
+	QImage *m_fakeImage;
+	unsigned char * m_fakeFrame;
 	
 	QTime cameraTime;
 	int frameCount;
