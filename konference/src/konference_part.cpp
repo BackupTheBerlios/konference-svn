@@ -34,7 +34,7 @@
 
 #include "konference_part.h"
 #include "videowidget.h"
-#include "webcam.h"
+#include "video/webcam.h"
 #include "configdialog.h"
 #include "settings.h"
 #include "rtp/rtpvideo.h"

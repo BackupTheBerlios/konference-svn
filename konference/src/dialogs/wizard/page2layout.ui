@@ -85,6 +85,11 @@ This will be used to identify you during a videoconference.</string>
                     </property>
                 </widget>
                 <widget class="QComboBox">
+                    <item>
+                        <property name="text">
+                            <string>/dev/video0</string>
+                        </property>
+                    </item>
                     <property name="name">
                         <cstring>m_videoComboBox</cstring>
                     </property>
@@ -95,6 +100,9 @@ This will be used to identify you during a videoconference.</string>
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                         </sizepolicy>
+                    </property>
+                    <property name="editable">
+                        <bool>true</bool>
                     </property>
                 </widget>
             </hbox>
@@ -114,13 +122,16 @@ This will be used to identify you during a videoconference.</string>
                     <property name="name">
                         <cstring>m_audioOutputDeviceComboBox</cstring>
                     </property>
+                    <property name="editable">
+                        <bool>true</bool>
+                    </property>
                 </widget>
                 <widget class="QComboBox" row="1" column="1" rowspan="2" colspan="1">
                     <property name="name">
                         <cstring>m_audioInputDeviceComboBox</cstring>
                     </property>
                     <property name="editable">
-                        <bool>false</bool>
+                        <bool>true</bool>
                     </property>
                 </widget>
                 <widget class="QLabel" row="0" column="0">
@@ -148,8 +159,16 @@ This will be used to identify you during a videoconference.</string>
                     </property>
                 </widget>
                 <widget class="QComboBox" row="0" column="1">
+                    <item>
+                        <property name="text">
+                            <string>OSS</string>
+                        </property>
+                    </item>
                     <property name="name">
                         <cstring>m_audioPluginComboBox</cstring>
+                    </property>
+                    <property name="enabled">
+                        <bool>false</bool>
                     </property>
                     <property name="editable">
                         <bool>true</bool>

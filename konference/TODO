@@ -1,0 +1,13 @@
+
+- if zou seek for something to be done grep for TODO ... youll surely find something suitable for you
+
+- refactor/rewrite the webcam handling class to not use threads 
+	and implement other "drivers" such as v4l2 and fake-image device
+	- create a base-class with virtual functions each 'driver' has to implement
+	- get rid of the client/server design of the webcam-class (way too complicated)
+	
+- seperate the audio-handling from the rtp-stuff to make it easier to implement other drivers (alsa/jack/gstreamer/arts/whatever)
+
+- implement a wizard (have a look at src/dialogs/wizard)
+
+- does the rtp-stack needs to use threads? im not sure why it should

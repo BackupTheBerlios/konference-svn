@@ -33,7 +33,7 @@ using namespace std;
 #include <fcntl.h>
 #include <linux/videodev.h>
 
-#include "codecs/h263.h"
+#include "../codecs/h263.h"
 #include "webcam.h"
 
 
@@ -167,6 +167,7 @@ bool Webcam::camOpen(QString WebcamName, int width, int height)
 	
 	//image-fallback
 	//TODO this is a ugly hack that doesnt belong here
+	/*
 	if(!opened)
 	{
 		m_isFake = true;
@@ -179,7 +180,7 @@ bool Webcam::camOpen(QString WebcamName, int width, int height)
 		//we are rgb32
 		m_fakeFrame = new unsigned char [RGB32_LEN(352,288)];
 		
-	}
+	}*/
 	
 	return opened;
 }

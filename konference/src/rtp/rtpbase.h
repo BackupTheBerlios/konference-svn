@@ -124,5 +124,4 @@ protected:
 	int framesOutDiscarded;
 	*/
 };
-
 #endif
