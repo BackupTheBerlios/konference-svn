@@ -80,7 +80,7 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	
 	//lets see if the webcam opened at the desired size.
 	if(m_webcam->width() != w || m_webcam->height() != h)
-		KMessageBox::error(0,QString("webcam opened at %1x%2").arg(m_webcam->width()).arg(m_webcam->height()));
+		KMessageBox::error(0,QString("webcam opened at %1x%2 instead of the requested %3x%4").arg(m_webcam->width()).arg(m_webcam->height()).arg(h).arg(w));
 	//m_webcam->camOpen(KonferenceSettings::videoDevice(), 352, 288);
 
 	//register webcam-clients and tell the webcam module to send the events to "this"
@@ -196,7 +196,7 @@ void KonferencePart::ProcessSipNotification()
 
 void KonferencePart::ProcessSipStateChange()
 {
-	bool inAudioOnly;
+	//TODO unused ->  bool inAudioOnly;
 	int OldState = State;
 
 	// Poll the FSM for network events
@@ -378,7 +378,7 @@ void KonferencePart::TransmitLocalWebcamImage()
 				memcpy(vb->video, encFrame, encLen); // Optimisation to get rid of this copy may be possible, check H.263 stack
 				vb->len = encLen;
 				vb->w = m_webcam->width();//176;
-				vb->h = m_webcam->height();144;
+				vb->h = m_webcam->height();//144;
 				if (!m_rtpVideo->queueVideo(vb))
 				{
 					kdDebug()  << "Could not queue RTP Video frame for transmission\n";
@@ -427,8 +427,8 @@ void KonferencePart::setupActions()
 	m_connectAction = new KAction( i18n( "C&onnect" ), "connect_creating", 0, this, SLOT( connectClicked() ), actionCollection(), "connect" );
 	m_cancelAction = new KAction( i18n( "&Stop connection" ), "button_cancel", 0, this, SLOT( cancelClicked() ), actionCollection(), "stop" );
 	m_cancelAction->setEnabled( false );
-	m_locationAction = new KWidgetAction( m_location, i18n( "&Location" ), CTRL + Key_L, this, SLOT( textEntered() ), actionCollection(), "location" );
-	m_locationAction->setAutoSized( true );
+	//m_locationAction = new KWidgetAction( m_location, i18n( "&Location" ), CTRL + Key_L, this, SLOT( textEntered() ), actionCollection(), "location" );
+	//m_locationAction->setAutoSized( true );
 
 }
 
@@ -529,7 +529,13 @@ KParts::Part* KonferencePartFactory::createPartObject( QWidget *parentWidget, co
 	KonferencePart* obj = new KonferencePart( parentWidget, widgetName, parent, name );
 
 	// See if we are to be read-write or not
-	//if (QCString(classname) == "KParts::ReadOnlyPart")
+	if (QCString(classname) == "KParts::ReadOnlyPart")
+	{
+		//this is only here, so that the compiler not complains about unused variables
+	}
+	//this as well
+	QString tmp = args.first();
+	
 	//obj->setReadWrite(false);
 
 	return obj;

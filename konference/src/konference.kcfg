@@ -131,6 +131,7 @@
 
 <group name="personal">
 		<entry name="name" type="String">
+		<default>KonferenceUser</default>
 		<label>Firstname of the user</label>
 		<whatsthis>Firstname of the user</whatsthis>
 		</entry>
@@ -160,6 +161,19 @@
 		<entry name="localVideoPort" type="Int">
 		<default>21234</default>
 		</entry>
+		
+		<entry name="autoAcceptCalls" type="Bool">
+		<default>true</default>
+		</entry>
+		
+		<entry name="enableNAT" type="Bool">
+		<default>false</default>
+		</entry>
+		
+		<entry name="publicIP" type="String">
+		<default>127.0.0.1</default>
+		</entry>
+		
 	</group>
 	
 	<group name="view">

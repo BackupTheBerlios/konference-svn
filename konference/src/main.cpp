@@ -31,7 +31,7 @@ static const char version[] = "0.1";
 
 static KCmdLineOptions options[] =
     {
-        { "+[URL]", I18N_NOOP( "URL to call" ), 0 },
+        { "+[URL]", I18N_NOOP( "URL to call [does not work]" ), 0 }, //TODO add functionality
         KCmdLineLastOption
     };
 

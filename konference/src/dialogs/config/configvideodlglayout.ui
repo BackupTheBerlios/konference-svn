@@ -528,6 +528,9 @@ This will only take effect if your openh323 was compiled with (rfc2190-)h263-sup
                         <property name="name">
                             <cstring>groupBox7</cstring>
                         </property>
+                        <property name="enabled">
+                            <bool>false</bool>
+                        </property>
                         <property name="title">
                             <string>Bandwidth Control</string>
                         </property>
