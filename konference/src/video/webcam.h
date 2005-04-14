@@ -24,10 +24,8 @@
 
 #include <qsqldatabase.h>
 #include <qregexp.h>
-#include <qtimer.h>
-#include <qptrlist.h>
+
 #include <qthread.h>
-#include <qdatetime.h>
 #include <qimage.h>
 
 #include <sys/types.h>
@@ -36,6 +34,9 @@
 
 #include <sys/ioctl.h>
 #include <linux/videodev.h>
+
+#include "webcambase.h"
+
 
 #define RGB24_LEN(w,h)      ( (w) * (h) * 3)
 #define RGB32_LEN(w,h)      ( (w) * (h) * 4)
@@ -52,44 +53,7 @@
 #define WCHEIGHT    vWin.height
 
 
-#define WC_CLIENT_BUFFERS   2
-
-struct wcClient
-{
-	QObject *eventWindow; // Window to receive frame-ready events
-	int format;
-	int frameSize;
-	int fps;
-	int actualFps;
-	int interframeTime;
-	int framesDelivered;
-	QPtrList<unsigned char> BufferList;
-	QPtrList<unsigned char> FullBufferList;
-	QTime timeLastCapture;
-
-};
-
-
-class WebcamEvent : public QCustomEvent
-{
-public:
-	enum Type { FrameReady = (QEvent::User + 200), WebcamErrorEv, WebcamDebugEv  };
-
-	WebcamEvent(Type t, wcClient *c) : QCustomEvent(t) { client=c; }
-	WebcamEvent(Type t, QString s) : QCustomEvent(t) { text=s; }
-	~WebcamEvent() {}
-
-	wcClient *getClient() { return client; }
-	QString msg() { return text;}
-
-private:
-	wcClient *client;
-	QString text;
-};
-
-
-
-class Webcam : public QThread
+class Webcam : public WebcamBase, QThread
 {
 
 public:

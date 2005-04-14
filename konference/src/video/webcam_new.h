@@ -112,7 +112,7 @@ private:
 	QImage *m_frameImg;
 	
 private slots:
-	void timerDone();
+	void timerDone(){};
 };
 
 #endif
