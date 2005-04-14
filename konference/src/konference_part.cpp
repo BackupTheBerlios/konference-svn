@@ -117,6 +117,7 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	QApplication::postEvent(this, new SipEvent(SipEvent::SipStateChange));
 }
 
+//unused for now
 void KonferencePart::newFrame()
 {
 	//TODO dont let the following functions get the image from the cam directly (get it here and pass it to the functions)
