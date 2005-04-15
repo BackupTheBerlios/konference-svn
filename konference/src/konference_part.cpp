@@ -34,7 +34,7 @@
 
 #include "konference_part.h"
 #include "videowidget.h"
-#include "video/webcam.h"
+#include "video/webcamv4l.h"
 #include "configdialog.h"
 #include "settings.h"
 #include "rtp/rtpvideo.h"
@@ -207,6 +207,9 @@ void KonferencePart::ProcessSipNotification()
 		else if (NotifyType == "IM")
 		{
 			kdDebug() << "ProcessSipNotification: NotifyType=IM" << endl;
+			kdDebug() << "URL for IM: " << NotifyUrl << endl;
+			kdDebug() << "NotifyParam1 for IM: " << NotifyParam1 << endl;
+			kdDebug() << "NotifyParam2 for IM: " << NotifyParam2 << endl;
 		}
 
 		else

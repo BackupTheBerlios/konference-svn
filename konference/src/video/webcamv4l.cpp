@@ -34,7 +34,7 @@ using namespace std;
 #include <linux/videodev.h>
 
 #include "../codecs/h263.h"
-#include "webcam4vl.h"
+#include "webcamv4l.h"
 
 
 Webcam::Webcam(QObject *parent)

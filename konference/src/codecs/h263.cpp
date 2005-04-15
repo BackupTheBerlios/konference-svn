@@ -23,7 +23,7 @@
 #include <kdebug.h>
 
 #include "h263.h"
-#include "../video/webcam.h"
+#include "../video/webcamv4l.h"
 
 H263Container::H263Container()
 {
