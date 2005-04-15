@@ -4,5 +4,5 @@ libvideo_la_LDFLAGS = $(all_libraries)
 noinst_LTLIBRARIES = libvideo.la
 
 
-libvideo_la_SOURCES = webcambase.cpp webcam4vl.cpp
-noinst_HEADERS = webcambase.h webcam4vl.h
+libvideo_la_SOURCES = webcambase.cpp webcamv4l.cpp
+noinst_HEADERS = webcambase.h webcamv4l.h
