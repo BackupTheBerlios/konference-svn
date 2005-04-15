@@ -34,7 +34,7 @@ class KURL;
 
 class KonferenceVideoWidget;
 class rtpVideo;
-class rtpAudio;
+class rtp;
 class H263Container;
 class wcClient;
 class SipContainer;
@@ -94,7 +94,9 @@ protected slots:
 	void cancelClicked();
 	
 	void startAudioRTP(QString remoteIP, int remoteAudioPort, int audioPayload, int dtmfPayload);
-	void startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes);
+	//void startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes);
+	void startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload);
+	
 	void stopAudioRTP();
 	void stopVideoRTP();
 	
@@ -142,7 +144,7 @@ private:
 	H263Container *h263;
 
 	rtpVideo *m_rtpVideo;
-	rtpAudio *m_rtpAudio;
+	rtp *m_rtpAudio;
 
 	wcClient *m_localWebcamClient;
 	wcClient *m_txWebcamClient;

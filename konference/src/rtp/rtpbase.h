@@ -28,7 +28,10 @@
 
 #include <kdebug.h>
 
-
+#define RTP_PAYLOAD_G711U		0x00
+#define RTP_PAYLOAD_G711A		0x08
+#define RTP_PAYLOAD_COMF_NOISE	0x0D
+#define RTP_PAYLOAD_GSM			0x03
 #define PAYLOAD(r)				(((r)->RtpMPT) & (~RTP_PAYLOAD_MARKER_BIT))
 
 #define RTP_STATS_INTERVAL        1 // Seconds between sending statistics
@@ -69,16 +72,14 @@ public:
 	virtual ~rtpBase();
 	
 protected:
-	/**
-	 * Binds a non-blocking socket to eth0.
-	 */
+	void Debug(QString dbg);
 	void OpenSocket();
-	/**
-	 * Closes the socket opened by @ref #OpenSocket()
-	 */
 	void CloseSocket();
 	void initialiseBase();
-	
+	void CheckSendStatistics();
+	//void StreamOut(void* pData, int nLen);
+	//void StreamOut(RTPPACKET &RTPpacket);
+
 	QObject *m_parent;
 	
 	bool killRtpThread;
@@ -109,7 +110,6 @@ protected:
 	codecBase *Codec;
 	
 	//statistics
-	/*
 	QTime timeNextStatistics;
 	QTime timeLastStatistics;
 	int pkIn;
@@ -122,6 +122,6 @@ protected:
 	int framesOut;
 	int framesInDiscarded;
 	int framesOutDiscarded;
-	*/
 };
+
 #endif

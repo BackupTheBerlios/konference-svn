@@ -37,6 +37,17 @@ rtpVideo::rtpVideo(QObject *parent, int localPort, QString remoteIP, int remoteP
 
 	initVideoBuffers(10);
 
+	pkIn = 0;
+	pkOut = 0;
+	pkMissed = 0;
+	pkLate = 0;
+	framesIn = 0;
+	framesOut = 0;
+	framesOutDiscarded = 0;
+	framesInDiscarded = 0;
+	//recBuffer = 0;
+	//dtmfIn = "";
+	//dtmfOut = "";
 	videoToTx = 0;
 	eventCond = 0;
 	pJitter = new Jitter();
@@ -95,7 +106,8 @@ bool rtpVideo::queueVideo(VIDEOBUFFER *vb)
 		res=true;
 	}
 	else
-		rtpMutex.unlock();
+		framesOutDiscarded++;
+	rtpMutex.unlock();
 	return res;
 }
 
@@ -112,6 +124,7 @@ void rtpVideo::transmitQueuedVideo()
 
 	if (queuedVideo)
 	{
+		framesOut++;
 
 		RTPPACKET videoPacket;
 		uchar *v = queuedVideo->video;
@@ -150,9 +163,11 @@ void rtpVideo::transmitQueuedVideo()
 			if (queuedLen == 0)
 				videoPacket.RtpMPT |= RTP_PAYLOAD_MARKER_BIT;  // Last packet has Marker bit set as per RFC 2190
 
+			bytesOut += (UDP_HEADER_SIZE+RTP_HEADER_SIZE+sizeof(H263_RFC2190_HDR)+pkLen);
 			if (rtpSocket)
 				rtpSocket->writeBlock((char *)&videoPacket.RtpVPXCC, RTP_HEADER_SIZE+sizeof(H263_RFC2190_HDR)+pkLen, yourIP, yourPort);
 			pkCnt++;
+			pkOut++;
 		}
 
 		//cout << "Transmitted Video Frame, len " << queuedVideo->len << " as " << pkCnt << " packets\n";
@@ -197,6 +212,8 @@ void rtpVideo::run()
 
 		StreamInVideo();
 		transmitQueuedVideo();
+
+		CheckSendStatistics();
 	}
 
 	delete videoListener;
@@ -257,169 +274,180 @@ void rtpVideo::StreamInVideo()
 	int mLen, reason;
 	bool MarketBitSet = false;
 
-	if (!rtpSocket)
-		return;
-	
-	// Get a buffer from the Jitter buffer to put the packet in
-	while (((JBuf = pJitter->GetJBuffer()) != 0) &&
-	        ((JBuf->len = rtpSocket->readBlock((char *)&JBuf->RtpVPXCC, sizeof(RTPPACKET))) > 0))
+	if (rtpSocket)
 	{
-		if (PAYLOAD(JBuf) == rtpMPT)
+		// Get a buffer from the Jitter buffer to put the packet in
+		while (((JBuf = pJitter->GetJBuffer()) != 0) &&
+		        ((JBuf->len = rtpSocket->readBlock((char *)&JBuf->RtpVPXCC, sizeof(RTPPACKET))) > 0))
 		{
-			if (JBuf->RtpMPT & RTP_PAYLOAD_MARKER_BIT)
+			bytesIn += (JBuf->len + UDP_HEADER_SIZE);
+			if (PAYLOAD(JBuf) == rtpMPT)
 			{
-				MarketBitSet = true;
-			}
-			JBuf->RtpSequenceNumber = ntohs(JBuf->RtpSequenceNumber);
-			JBuf->RtpTimeStamp = ntohl(JBuf->RtpTimeStamp);
-			if (rxFirstFrame)
-			{
-				rxFirstFrame = FALSE;
-				videoFrameFirstSeqNum = rxSeqNum = JBuf->RtpSequenceNumber;
-			}
-			if (JBuf->RtpSequenceNumber < videoFrameFirstSeqNum)
-			{
-				kdDebug() << "Packet arrived too late to play, try increasing jitter buffer" << endl;
-				pJitter->FreeJBuffer(JBuf);
+				if (JBuf->RtpMPT & RTP_PAYLOAD_MARKER_BIT)
+				{
+					MarketBitSet = true;
+					framesIn++;
+				}
+				pkIn++;
+				JBuf->RtpSequenceNumber = ntohs(JBuf->RtpSequenceNumber);
+				JBuf->RtpTimeStamp = ntohl(JBuf->RtpTimeStamp);
+				if (rxFirstFrame)
+				{
+					rxFirstFrame = FALSE;
+					videoFrameFirstSeqNum = rxSeqNum = JBuf->RtpSequenceNumber;
+				}
+				if (JBuf->RtpSequenceNumber < videoFrameFirstSeqNum)
+				{
+					kdDebug() << "Packet arrived too late to play, try increasing jitter buffer" << endl;
+					pJitter->FreeJBuffer(JBuf);
+					pkLate++;
+				}
+				else
+					pJitter->InsertJBuffer(JBuf);
 			}
 			else
-				pJitter->InsertJBuffer(JBuf);
+			{
+				kdDebug() << "Received Invalid Payload " << (int)JBuf->RtpMPT << endl;
+				pJitter->FreeJBuffer(JBuf);
+			}
 		}
-		else
+
+		if (JBuf == 0)
 		{
-			kdDebug() << "Received Invalid Payload " << (int)JBuf->RtpMPT << endl;
+			// No free buffers, abort
+			kdDebug() << "No free buffers, aborting network read" << endl;
+		}
+		else if (JBuf->len <= 0)
+		{
+			// Got a buffer but no received frames, free the buffer
 			pJitter->FreeJBuffer(JBuf);
 		}
-	}
-
-	if (JBuf == 0)
-	{
-		// No free buffers, abort
-		kdDebug() << "No free buffers, aborting network read" << endl;
-	}
-	else if (JBuf->len <= 0)
-	{
-		// Got a buffer but no received frames, free the buffer
-		pJitter->FreeJBuffer(JBuf);
-	}
 
 
 
-	// Currently, whilst we buffer frames until the final one, we use receipt of the final frame
-	// to cause processing of all the received buffers. So any mis-orderering will cause problems!
-	// This should hopefully be flagged by the "VIDEOPKLATE" check above so we will know to fix it!
-	if (MarketBitSet)
-	{
-		// Check if we have all packets in the sequence up until the marker
-		int vidLen = pJitter->GotAllBufsInFrame(rxSeqNum, sizeof(H263_RFC2190_HDR));
-		if (vidLen == 0)
+		// Currently, whilst we buffer frames until the final one, we use receipt of the final frame
+		// to cause processing of all the received buffers. So any mis-orderering will cause problems!
+		// This should hopefully be flagged by the "VIDEOPKLATE" check above so we will know to fix it!
+		if (MarketBitSet)
 		{
-			kdDebug() << "RTP Dropping video frame: Lost Packet" << endl;
-			rxSeqNum = pJitter->DumpAllJBuffers(true) + 1;
-		}
-		else
-		{
-			VIDEOBUFFER *picture = getVideoBuffer(vidLen);
-			if (picture)
+			// Check if we have all packets in the sequence up until the marker
+			int vidLen = pJitter->GotAllBufsInFrame(rxSeqNum, sizeof(H263_RFC2190_HDR));
+			if (vidLen == 0)
 			{
-				int pictureIndex = 0;
-				bool markerSetOnLastPacket = false;
-				picture->w = picture->h = 0;
-
-				// Concatenate received IP packets into a picture buffer, checking we have all we parts
-				while ((JBuf = pJitter->DequeueJBuffer(rxSeqNum, reason)) != 0)
+				kdDebug() << "RTP Dropping video frame: Lost Packet" << endl;
+				rxSeqNum = pJitter->DumpAllJBuffers(true) + 1;
+				framesInDiscarded++;
+				pkMissed++; // Actually may have missed more than one, but good enough for now
+			}
+			else
+			{
+				VIDEOBUFFER *picture = getVideoBuffer(vidLen);
+				if (picture)
 				{
-					++rxSeqNum;
-					mLen = JBuf->len - RTP_HEADER_SIZE - sizeof(H263_RFC2190_HDR);
-					rxTimestamp += mLen;
-					pictureIndex = appendVideoPacket(picture, pictureIndex, JBuf, mLen);
-					if (JBuf->RtpMPT & RTP_PAYLOAD_MARKER_BIT)
+					int pictureIndex = 0;
+					bool markerSetOnLastPacket = false;
+					picture->w = picture->h = 0;
+
+					// Concatenate received IP packets into a picture buffer, checking we have all we parts
+					while ((JBuf = pJitter->DequeueJBuffer(rxSeqNum, reason)) != 0)
 					{
-						markerSetOnLastPacket = true;
-					}
-					if (picture->w == 0)
-					{
-						H263_RFC2190_HDR *h263Hdr = (H263_RFC2190_HDR *)JBuf->RtpData;
-						switch (H263HDR_GETSZ(h263Hdr->h263hdr))
+						++rxSeqNum;
+						mLen = JBuf->len - RTP_HEADER_SIZE - sizeof(H263_RFC2190_HDR);
+						rxTimestamp += mLen;
+						pictureIndex = appendVideoPacket(picture, pictureIndex, JBuf, mLen);
+						if (JBuf->RtpMPT & RTP_PAYLOAD_MARKER_BIT)
 						{
-						case H263_SRC_4CIF:  picture->w = 704; picture->h = 576; break;
-						default:
-						case H263_SRC_CIF:   picture->w = 352; picture->h = 288; break;
-						case H263_SRC_QCIF:  picture->w = 176; picture->h = 144; break;
-						case H263_SRC_SQCIF: picture->w = 128; picture->h = 96;  break;
+							markerSetOnLastPacket = true;
 						}
+						if (picture->w == 0)
+						{
+							H263_RFC2190_HDR *h263Hdr = (H263_RFC2190_HDR *)JBuf->RtpData;
+							switch (H263HDR_GETSZ(h263Hdr->h263hdr))
+							{
+							case H263_SRC_4CIF:  picture->w = 704; picture->h = 576; break;
+							default:
+							case H263_SRC_CIF:   picture->w = 352; picture->h = 288; break;
+							case H263_SRC_QCIF:  picture->w = 176; picture->h = 144; break;
+							case H263_SRC_SQCIF: picture->w = 128; picture->h = 96;  break;
+							}
+						}
+						pJitter->FreeJBuffer(JBuf);
 					}
-					pJitter->FreeJBuffer(JBuf);
-				}
 
-				// Check rxed frame was not too big
-				if (pictureIndex > (int)sizeof(picture->video))
-				{
-					kdDebug() << "SIP: Received video frame size " << pictureIndex << "; too big for buffer" << endl;
-					freeVideoBuffer(picture);
-				}
-
-				// Now pass the received picture up to the higher layer. If the last packet has the marker bit set
-				// then we have received a full pictures worth of packets.
-				else if (markerSetOnLastPacket)
-				{
-					//cout << "Received frame length " << pictureIndex << " bytes\n";
-					picture->len = pictureIndex;
-
-					// Pass received picture to app
-					rtpMutex.lock();
-					if (rxedVideoFrames.count() < 3)    // Limit no of buffes tied up queueing to app
+					// Check rxed frame was not too big
+					if (pictureIndex > (int)sizeof(picture->video))
 					{
-						rxedVideoFrames.append(picture);
-						rtpMutex.unlock();
+						kdDebug() << "SIP: Received video frame size " << pictureIndex << "; too big for buffer" << endl;
+						freeVideoBuffer(picture);
+						framesInDiscarded++;
+						picture = 0;
+					}
+
+					// Now pass the received picture up to the higher layer. If the last packet has the marker bit set
+					// then we have received a full pictures worth of packets.
+					else if (markerSetOnLastPacket)
+					{
+						//cout << "Received frame length " << pictureIndex << " bytes\n";
+						picture->len = pictureIndex;
+
+						// Pass received picture to app
+						rtpMutex.lock();
+						if (rxedVideoFrames.count() < 3)    // Limit no of buffes tied up queueing to app
+						{
+							rxedVideoFrames.append(picture);
+							rtpMutex.unlock();
+						}
+						else
+						{
+							rtpMutex.unlock();
+							freeVideoBuffer(picture);
+							framesInDiscarded++;
+							kdDebug() << "Discarding frame, app consuming too slowly" << endl;
+						}
+						if (m_parent)
+							QApplication::postEvent(m_parent, new RtpEvent(RtpEvent::RxVideoFrame));
+						picture = 0;
 					}
 					else
 					{
-						rtpMutex.unlock();
+						// We didn't get the whole frame, so dump all buffered packets
+						kdDebug() << "RTP Dropping video frame: ";
+						switch (reason)
+						{
+						case JB_REASON_DUPLICATE:
+							kdDebug() << "Duplicate" << endl;
+							break;
+						case JB_REASON_DTMF:
+							break;
+							kdDebug() << "DTMF" << endl;
+						case JB_REASON_MISSING:
+							kdDebug() << "Missed Packets" << endl;
+							pkMissed++;
+							break;
+						case JB_REASON_EMPTY:
+							kdDebug() << "Empty" << endl;
+							break;
+						case JB_REASON_SEQERR:
+							kdDebug() << "Sequence Error" << endl;
+							break;
+						default:
+							kdDebug() << "Unknown" << endl;
+							break;
+						}
+						rxSeqNum = pJitter->DumpAllJBuffers(true) + 1;
 						freeVideoBuffer(picture);
+						picture = 0;
 					}
-					if (m_parent)
-						QApplication::postEvent(m_parent, new RtpEvent(RtpEvent::RxVideoFrame));
-					picture = 0;
 				}
 				else
 				{
-					// We didn't get the whole frame, so dump all buffered packets
-					kdDebug() << "RTP Dropping video frame: ";
-					switch (reason)
-					{
-					case JB_REASON_DUPLICATE:
-						kdDebug() << "Duplicate" << endl;
-						break;
-					case JB_REASON_DTMF:
-						break;
-						kdDebug() << "DTMF" << endl;
-					case JB_REASON_MISSING:
-						kdDebug() << "Missed Packets" << endl;
-						break;
-					case JB_REASON_EMPTY:
-						kdDebug() << "Empty" << endl;
-						break;
-					case JB_REASON_SEQERR:
-						kdDebug() << "Sequence Error" << endl;
-						break;
-					default:
-						kdDebug() << "Unknown" << endl;
-						break;
-					}
+					kdDebug() << "No buffers for video frame, dropping" << endl;
 					rxSeqNum = pJitter->DumpAllJBuffers(true) + 1;
-					freeVideoBuffer(picture);
-					picture = 0;
+					framesInDiscarded++;
 				}
 			}
-			else
-			{
-				kdDebug() << "No buffers for video frame, dropping" << endl;
-				rxSeqNum = pJitter->DumpAllJBuffers(true) + 1;
-			}
+			videoFrameFirstSeqNum = rxSeqNum;
 		}
-		videoFrameFirstSeqNum = rxSeqNum;
 	}
-
 }
 

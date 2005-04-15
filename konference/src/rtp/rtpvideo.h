@@ -44,7 +44,7 @@ H263_RFC2190_HDR;
 
 #define H263SPACE               (IP_MTU-RTP_HEADER_SIZE-UDP_HEADER_SIZE-sizeof(H263_RFC2190_HDR))
 
-#define MAX_VIDEO_LEN           256000
+#define MAX_VIDEO_LEN 256000
 
 typedef struct VIDEOBUFFER
 {
@@ -61,65 +61,26 @@ VIDEOBUFFER;
 class rtpVideo : public rtpBase, QThread
 {
 public:
-	rtpVideo(QObject *parent, int localPort, QString remoteIP, int remotePort, int mediaPay, rtpTxMode txm, rtpRxMode rxm);
-	~rtpVideo();
+    rtpVideo(QObject *parent, int localPort, QString remoteIP, int remotePort, int mediaPay, rtpTxMode txm, rtpRxMode rxm);
 	VIDEOBUFFER *getRxedVideo();
 	VIDEOBUFFER *getVideoBuffer(int len=0);
-	
-	/**
-	 * @brief Append a videobuffer to the transmit-queue..
-	 * @see transmitQueuedVideo()
-	 */
 	bool queueVideo(VIDEOBUFFER *vb);
-	
-	/**
-	 * @brief Mark a videobuffer as free so it can be reused.
-	 * @arg vb The videobuffer to free.
-	 */
 	void freeVideoBuffer(VIDEOBUFFER *vb);
-	
-	/**
-	 * @brief Destroys all videobuffers.
-	 *
-	 * Destroys all videobuffers created with @ref #initVideoBuffers()
-	 *
-	 * @see initVideoBuffers()
-	 */
 	void destroyVideoBuffers();
-	
-	/**
-	 * Transmits the queued videobuffer(s)
-	 * @see queueVideo()
-	 */
 	void transmitQueuedVideo();
-
+	void initialise();
+    ~rtpVideo();
 	void run();
-	
-	/**
-	 * @brief Reads videoframe from the network
-	 *
-	 * This function reads as many rtp-packets as the socket has for us
-	 * and puts them into the jitterbuffer. If we received a full videoframe,
-	 * it is stored in the buffer(s) for RXed video.
-	 */
 	void StreamInVideo();
-	
-	/**
-	 * Creates a QPtrList with 10 VIDEOBUFFERs
-	 * @arg Num The number of VIDEOBUFFERs to initialise
-	 */
 	void initVideoBuffers(int Num);
 	int  appendVideoPacket(VIDEOBUFFER *picture, int curLen, RTPPACKET *JBuf, int mLen);
-
-protected:
-	void initialise();
 	
+protected:
 	Jitter *pJitter;
 
 	int videoPayload;
 	QPtrList<VIDEOBUFFER> FreeVideoBufferQ;
 	QPtrList<VIDEOBUFFER> rxedVideoFrames;
-	///Frame that gets transmitted next
 	VIDEOBUFFER *videoToTx;
 	int videoFrameFirstSeqNum;
 };
