@@ -25,6 +25,7 @@
 //#include <qtimer.h>
 #include <qdatetime.h>
 
+#include <linux/videodev.h>
 
 #define RGB24_LEN(w,h)      ( (w) * (h) * 3)
 #define RGB32_LEN(w,h)      ( (w) * (h) * 4)
@@ -38,6 +39,7 @@
 #define _B(y,u,v) (0x2568*(y) + 0x40cf*(v)) /0x2000
 
 #define WC_CLIENT_BUFFERS   2
+
 
 struct wcClient
 {
@@ -84,6 +86,8 @@ public:
 
 	~WebcamBase();
 
+	
+	
 protected:
 	QPtrList<wcClient> wcClientList;
 

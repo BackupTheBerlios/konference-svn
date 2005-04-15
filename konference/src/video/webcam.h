@@ -33,14 +33,11 @@
 #include <fcntl.h>
 
 #include <sys/ioctl.h>
-#include <linux/videodev.h>
 
 #include "webcambase.h"
 
-
 #define WCWIDTH     vWin.width
 #define WCHEIGHT    vWin.height
-
 
 class Webcam : public WebcamBase, QThread
 {
@@ -78,13 +75,14 @@ public:
 	int height(){return vWin.height;};
 	int isGreyscale(void);
 
+	
+	void ProcessFrame(unsigned char *frame, int fSize);
+
 	wcClient *RegisterClient(int format, int fps, QObject *eventWin);
 	void UnregisterClient(wcClient *client);
 	unsigned char *GetVideoFrame(wcClient *client);
 	void FreeVideoBuffer(wcClient *client, unsigned char *buffer);
-	void ProcessFrame(unsigned char *frame, int fSize);
-
-
+	
 private:
 	void StartThread();
 	void KillThread();

@@ -185,7 +185,6 @@ bool Webcam::camOpen(QString WebcamName, int width, int height)
 	return opened;
 }
 
-
 void Webcam::camClose()
 {
 	KillThread();
@@ -208,7 +207,6 @@ void Webcam::camClose()
 	m_isOpen = false;
 }
 
-
 void Webcam::readCaps()
 {
 	if (hDev > 0)
@@ -218,7 +216,6 @@ void Webcam::readCaps()
 		ioctl(hDev, VIDIOCGPICT, &vPic);
 	}
 }
-
 
 void Webcam::SetSize(int width, int height)
 {
@@ -232,7 +229,6 @@ void Webcam::SetSize(int width, int height)
 
 	readCaps();
 }
-
 
 bool Webcam::SetPalette(unsigned int palette)
 {
@@ -257,13 +253,10 @@ bool Webcam::SetPalette(unsigned int palette)
 	return (vPic.palette == palette ? true : false);
 }
 
-
 unsigned int Webcam::GetPalette(void)
 {
 	return (vPic.palette);
 }
-
-
 
 int Webcam::SetBrightness(int v)
 {
@@ -303,7 +296,6 @@ int Webcam::SetContrast(int v)
 	return vPic.contrast;
 }
 
-
 int Webcam::SetColour(int v)
 {
 	if ((v >= 0) && (v <= 65535))
@@ -322,7 +314,6 @@ int Webcam::SetColour(int v)
 		kdDebug() << "Invalid colour parameter" << endl;
 	return vPic.colour;
 }
-
 
 int Webcam::SetHue(int v)
 {
@@ -343,7 +334,6 @@ int Webcam::SetHue(int v)
 	return vPic.hue;
 }
 
-
 int Webcam::SetTargetFps(wcClient *client, int f)
 {
 	if ((f >= 1) && (f <= 30) && (client != 0))
@@ -358,7 +348,6 @@ int Webcam::SetTargetFps(wcClient *client, int f)
 
 	return fps;
 }
-
 
 int Webcam::GetActualFps()
 {
@@ -385,8 +374,6 @@ int Webcam::isGreyscale()
 {
 	return ((vCaps.type & VID_TYPE_MONOCHROME) ? true : false);
 };
-
-
 
 wcClient *Webcam::RegisterClient(int format, int fps, QObject *eventWin)
 {

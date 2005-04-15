@@ -18,6 +18,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <kdebug.h>
+
 #include "webcambase.h"
 
 WebcamBase::WebcamBase(QObject *parent, const char *name)
@@ -26,10 +28,10 @@ WebcamBase::WebcamBase(QObject *parent, const char *name)
 
 }
 
-
 WebcamBase::~WebcamBase()
 {
 }
+
 
 
 #include "webcambase.moc"
