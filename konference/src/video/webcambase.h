@@ -86,8 +86,9 @@ public:
 
 	~WebcamBase();
 
-	
-	
+	virtual int width()  = 0;
+	virtual int height() = 0;
+
 protected:
 	QPtrList<wcClient> wcClientList;
 

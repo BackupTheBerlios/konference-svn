@@ -36,22 +36,28 @@
 
 #include "webcambase.h"
 
+/*
 #define WCWIDTH     vWin.width
 #define WCHEIGHT    vWin.height
+*/
 
 class Webcam : public WebcamBase, QThread
 {
 
 public:
 
-	Webcam(QObject *parent=0);
+	Webcam();
 	virtual ~Webcam(void);
 	virtual void run();
 
+	/**
+	 * Function that returns a "user-friendly" name of the cam. 
+	 * E.g something like "Philips 646 webcam"
+	 */
 	static QString devName(QString WebcamName);
+
 	bool camOpen(QString WebcamName, int width, int height);
 	void camClose(void);
-	bool isOpen(){return m_isOpen;};
 	bool SetPalette(unsigned int palette);
 	unsigned int GetPalette(void);
 	int  SetBrightness(int v);
@@ -71,18 +77,18 @@ public:
 	void GetMaxSize(int *x, int *y);
 	void GetMinSize(int *x, int *y);
 	void GetCurSize(int *x, int *y);
-	int width(){return vWin.width;};
-	int height(){return vWin.height;};
+	virtual int width(){return vWin.width;};
+	virtual int height(){return vWin.height;};
 	int isGreyscale(void);
 
-	
+
 	void ProcessFrame(unsigned char *frame, int fSize);
 
 	wcClient *RegisterClient(int format, int fps, QObject *eventWin);
 	void UnregisterClient(wcClient *client);
 	unsigned char *GetVideoFrame(wcClient *client);
 	void FreeVideoBuffer(wcClient *client, unsigned char *buffer);
-	
+
 private:
 	void StartThread();
 	void KillThread();
@@ -105,12 +111,7 @@ private:
 	int wcFormat;
 	bool wcFlip;
 
-	bool m_isOpen;
-	///true if we are providing an image from a file instead of video from a cam
-	bool m_isFake;
-	QImage *m_fakeImage;
-	unsigned char * m_fakeFrame;
-	
+
 	QTime cameraTime;
 	int frameCount;
 	int totalCaptureMs;

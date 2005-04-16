@@ -37,7 +37,7 @@ using namespace std;
 #include "webcamv4l.h"
 
 
-Webcam::Webcam(QObject *parent)
+Webcam::Webcam()
 {
 	hDev = 0;
 	DevName = "";
@@ -49,10 +49,6 @@ Webcam::Webcam(QObject *parent)
 	wcFormat = 0;
 	wcFlip = false;
 
-	m_isOpen = false;
-	m_isFake = false;
-	
-	(void)parent;
 	vCaps.name[0] = 0;
 	vCaps.maxwidth = 0;
 	vCaps.maxheight = 0;
@@ -74,7 +70,7 @@ QString Webcam::devName(QString WebcamName)
 {
 	int handle = open(WebcamName, O_RDWR);
 	if (handle <= 0)
-		return "";
+		return "";//TODO should this be QString::Null ?
 
 	struct video_capability tempCaps;
 	ioctl(handle, VIDIOCGCAP, &tempCaps);
@@ -83,7 +79,7 @@ QString Webcam::devName(QString WebcamName)
 }
 
 
-bool Webcam::camOpen(QString WebcamName, int width, int height)
+bool Webcam::camOpen(QString WebcamName, int width_, int height_)
 {
 	bool opened=true;
 
@@ -114,12 +110,12 @@ bool Webcam::camOpen(QString WebcamName, int width, int height)
 		frameCount = 0;
 		totalCaptureMs = 0;
 
-		SetSize(width, height);
+		SetSize(width_, height_);
 		int actWidth, actHeight;
 		GetCurSize(&actWidth, &actHeight);
-		if ((width != actWidth) || (height != actHeight))
+		if ((width_ != actWidth) || (height_ != actHeight))
 		{
-			kdDebug() << "Could not set webcam to " << width << "x" << height << "; got " << actWidth << "x" << actHeight << " instead.\n";
+			kdDebug() << "Could not set webcam to " << width_ << "x" << height_ << "; got " << actWidth << "x" << actHeight << " instead.\n";
 		}
 
 		//Allocate picture buffer memory
@@ -134,10 +130,10 @@ bool Webcam::camOpen(QString WebcamName, int width, int height)
 		{
 			switch (GetPalette())
 			{
-			case VIDEO_PALETTE_RGB24:   frameSize = RGB24_LEN(WCWIDTH, WCHEIGHT);   break;
-			case VIDEO_PALETTE_RGB32:   frameSize = RGB32_LEN(WCWIDTH, WCHEIGHT);   break;
-			case VIDEO_PALETTE_YUV420P: frameSize = YUV420P_LEN(WCWIDTH, WCHEIGHT); break;
-			case VIDEO_PALETTE_YUV422P: frameSize = YUV422P_LEN(WCWIDTH, WCHEIGHT); break;
+			case VIDEO_PALETTE_RGB24:   frameSize = RGB24_LEN(width(), height());   break;
+			case VIDEO_PALETTE_RGB32:   frameSize = RGB32_LEN(width(), height());   break;
+			case VIDEO_PALETTE_YUV420P: frameSize = YUV420P_LEN(width(), height()); break;
+			case VIDEO_PALETTE_YUV422P: frameSize = YUV422P_LEN(width(), height()); break;
 			default:
 				kdDebug() << "Palette mode " << GetPalette() << " not yet supported" << endl;
 				camClose();
@@ -163,25 +159,7 @@ bool Webcam::camOpen(QString WebcamName, int width, int height)
 
 		StartThread();
 	}
-	m_isOpen = opened; // m_isOpen is used in isOpen()
-	
-	//image-fallback
-	//TODO this is a ugly hack that doesnt belong here
-	/*
-	if(!opened)
-	{
-		m_isFake = true;
-		//opened = true;
-		
-		//create grey color and construct a qimage with that color
-		QColor *tmpcolor = new QColor(50,50,50);
-		m_fakeImage = new QImage(352,288,32);
-		m_fakeImage->fill(tmpcolor->rgb());
-		//we are rgb32
-		m_fakeFrame = new unsigned char [RGB32_LEN(352,288)];
-		
-	}*/
-	
+
 	return opened;
 }
 
@@ -204,7 +182,6 @@ void Webcam::camClose()
 
 	picbuff1 = 0;
 
-	m_isOpen = false;
 }
 
 void Webcam::readCaps()
@@ -366,8 +343,8 @@ void Webcam::GetMinSize(int *x, int *y)
 
 void Webcam::GetCurSize(int *x, int *y)
 {
-	*y = WCHEIGHT;
-	*x = WCWIDTH;
+	*y = vWin.height;
+	*x = vWin.width;
 };
 
 int Webcam::isGreyscale()
@@ -394,10 +371,10 @@ wcClient *Webcam::RegisterClient(int format, int fps, QObject *eventWin)
 
 	switch (format)
 	{
-	case VIDEO_PALETTE_RGB24:   client->frameSize = RGB24_LEN(WCWIDTH, WCHEIGHT);   client->format = PIX_FMT_BGR24;      break;
-	case VIDEO_PALETTE_RGB32:   client->frameSize = RGB32_LEN(WCWIDTH, WCHEIGHT);   client->format = PIX_FMT_RGBA32;     break;
-	case VIDEO_PALETTE_YUV420P: client->frameSize = YUV420P_LEN(WCWIDTH, WCHEIGHT); client->format = PIX_FMT_YUV420P;    break;
-	case VIDEO_PALETTE_YUV422P: client->frameSize = YUV422P_LEN(WCWIDTH, WCHEIGHT); client->format = PIX_FMT_YUV422P;    break;
+	case VIDEO_PALETTE_RGB24:   client->frameSize = RGB24_LEN(width(), height());   client->format = PIX_FMT_BGR24;      break;
+	case VIDEO_PALETTE_RGB32:   client->frameSize = RGB32_LEN(width(), height());   client->format = PIX_FMT_RGBA32;     break;
+	case VIDEO_PALETTE_YUV420P: client->frameSize = YUV420P_LEN(width(), height()); client->format = PIX_FMT_YUV420P;    break;
+	case VIDEO_PALETTE_YUV422P: client->frameSize = YUV422P_LEN(width(), height()); client->format = PIX_FMT_YUV422P;    break;
 	default:
 		kdDebug() << "Webcam: Attempt to register unsupported Webcam format\n";
 		delete client;
@@ -537,20 +514,20 @@ void Webcam::ProcessFrame(unsigned char *frame, int fSize)
 		switch(wcFormat)
 		{
 		case PIX_FMT_YUV420P:
-			flipYuv420pImage(frame, WCWIDTH, WCHEIGHT, tempBuffer);
+			flipYuv420pImage(frame, width(), height(), tempBuffer);
 			frame = tempBuffer;
 			break;
 		case PIX_FMT_YUV422P:
-			flipYuv422pImage(frame, WCWIDTH, WCHEIGHT, tempBuffer);
+			flipYuv422pImage(frame, width(), height(), tempBuffer);
 			frame = tempBuffer;
 			break;
 		case PIX_FMT_RGBA32:
-			flipRgb32Image(frame, WCWIDTH, WCHEIGHT, tempBuffer);
+			flipRgb32Image(frame, width(), height(), tempBuffer);
 			frame = tempBuffer;
 			break;
 		case PIX_FMT_BGR24:
 		case PIX_FMT_RGB24:
-			flipRgb24Image(frame, WCWIDTH, WCHEIGHT, tempBuffer);
+			flipRgb24Image(frame, width(), height(), tempBuffer);
 			frame = tempBuffer;
 			break;
 		default:
@@ -587,10 +564,10 @@ void Webcam::ProcessFrame(unsigned char *frame, int fSize)
 				{
 					//kdDebug() << "format conversion" << endl;
 					AVPicture image_in, image_out;
-					avpicture_fill(&image_in,  (uint8_t *)frame, wcFormat, WCWIDTH, WCHEIGHT);
-					avpicture_fill(&image_out, (uint8_t *)buffer, it->format, WCWIDTH, WCHEIGHT);
+					avpicture_fill(&image_in,  (uint8_t *)frame, wcFormat, width(), height());
+					avpicture_fill(&image_out, (uint8_t *)buffer, it->format, width(), height());
 					//img_convert(&image_out, it->format, &image_in, wcFormat, WCWIDTH, WCHEIGHT);
-					if(img_convert(&image_out, it->format, &image_in, wcFormat, WCWIDTH, WCHEIGHT) == -1)
+					if(img_convert(&image_out, it->format, &image_in, wcFormat, width(), height()) == -1)
 						kdDebug() << "convert failed" << endl;
 					//YUV420PtoRGB32((int)vWin.width, (int)vWin.height, (int)vWin.width, frame, buffer, sizeof(buffer));
 
