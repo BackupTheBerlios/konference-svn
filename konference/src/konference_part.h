@@ -38,7 +38,8 @@ class rtp;
 class H263Container;
 class wcClient;
 class SipContainer;
-class Webcam;
+class WebcamBase;
+
 
 /**
  * This is a "Part".  It that does all the real work in a KPart
@@ -132,7 +133,7 @@ private:
 	/**
 	 * This handles the grabbing from our cam. if there is a new frame our part get an event.
 	 */
-	Webcam *m_webcam;
+	WebcamBase *m_webcam;
 
 	KHistoryCombo *m_location;
 

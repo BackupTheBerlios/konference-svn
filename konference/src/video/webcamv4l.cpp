@@ -18,9 +18,6 @@
 *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
 ***************************************************************************/
 
-#include <qapplication.h>
-#include <qimage.h>
-
 #include <kdebug.h>
 
 
@@ -33,21 +30,15 @@ using namespace std;
 #include <fcntl.h>
 #include <linux/videodev.h>
 
-#include "../codecs/h263.h"
 #include "webcamv4l.h"
 
 
-Webcam::Webcam()
+WebcamV4L::WebcamV4L() : WebcamBase()
 {
 	hDev = 0;
 	DevName = "";
-	picbuff1 = 0;
-	imageLen = 0;
 	frameSize = 0;
-	fps = 5;
 	killWebcamThread = true; // Leave true whilst its not running
-	wcFormat = 0;
-	wcFlip = false;
 
 	vCaps.name[0] = 0;
 	vCaps.maxwidth = 0;
@@ -66,7 +57,7 @@ Webcam::Webcam()
 }
 
 
-QString Webcam::devName(QString WebcamName)
+QString WebcamV4L::devName(QString WebcamName)
 {
 	int handle = open(WebcamName, O_RDWR);
 	if (handle <= 0)
@@ -79,7 +70,7 @@ QString Webcam::devName(QString WebcamName)
 }
 
 
-bool Webcam::camOpen(QString WebcamName, int width_, int height_)
+bool WebcamV4L::camOpen(QString WebcamName, int width_, int height_)
 {
 	bool opened=true;
 
@@ -110,9 +101,9 @@ bool Webcam::camOpen(QString WebcamName, int width_, int height_)
 		frameCount = 0;
 		totalCaptureMs = 0;
 
-		SetSize(width_, height_);
+		setSize(width_, height_);
 		int actWidth, actHeight;
-		GetCurSize(&actWidth, &actHeight);
+		getCurSize(&actWidth, &actHeight);
 		if ((width_ != actWidth) || (height_ != actHeight))
 		{
 			kdDebug() << "Could not set webcam to " << width_ << "x" << height_ << "; got " << actWidth << "x" << actHeight << " instead.\n";
@@ -141,15 +132,15 @@ bool Webcam::camOpen(QString WebcamName, int width_, int height_)
 				break;
 			}
 
-			picbuff1 = new unsigned char [frameSize];
+			m_picbuff = new unsigned char [frameSize];
 		}
 
 		switch(GetPalette())
 		{
-		case VIDEO_PALETTE_YUV420P:    wcFormat = PIX_FMT_YUV420P;    break;
-		case VIDEO_PALETTE_YUV422P:    wcFormat = PIX_FMT_YUV422P;    break;
-		case VIDEO_PALETTE_RGB24:      wcFormat = PIX_FMT_BGR24;      break;
-		case VIDEO_PALETTE_RGB32:      wcFormat = PIX_FMT_RGBA32;     break;
+		case VIDEO_PALETTE_YUV420P:    m_wcFormat = PIX_FMT_YUV420P;    break;
+		case VIDEO_PALETTE_YUV422P:    m_wcFormat = PIX_FMT_YUV422P;    break;
+		case VIDEO_PALETTE_RGB24:      m_wcFormat = PIX_FMT_BGR24;      break;
+		case VIDEO_PALETTE_RGB32:      m_wcFormat = PIX_FMT_RGBA32;     break;
 		default:
 			kdDebug() << "Webcam: Unsupported palette mode " << GetPalette() << endl; // Should not get here, caught earlier
 			camClose();
@@ -163,7 +154,7 @@ bool Webcam::camOpen(QString WebcamName, int width_, int height_)
 	return opened;
 }
 
-void Webcam::camClose()
+void WebcamV4L::camClose()
 {
 	KillThread();
 
@@ -177,14 +168,11 @@ void Webcam::camClose()
 		hDev = 0;
 	}
 
-	if (picbuff1)
-		delete picbuff1;
-
-	picbuff1 = 0;
-
+	if (m_picbuff)
+		delete m_picbuff;
 }
 
-void Webcam::readCaps()
+void WebcamV4L::readCaps()
 {
 	if (hDev > 0)
 	{
@@ -194,7 +182,7 @@ void Webcam::readCaps()
 	}
 }
 
-void Webcam::SetSize(int width, int height)
+void WebcamV4L::setSize(int width, int height)
 {
 	// Note you can't call this whilst the webcam is open because all the buffers will be the wrong size
 	memset(&vWin, 0, sizeof(struct video_window));
@@ -207,7 +195,7 @@ void Webcam::SetSize(int width, int height)
 	readCaps();
 }
 
-bool Webcam::SetPalette(unsigned int palette)
+bool WebcamV4L::SetPalette(unsigned int palette)
 {
 	int depth;
 
@@ -230,12 +218,12 @@ bool Webcam::SetPalette(unsigned int palette)
 	return (vPic.palette == palette ? true : false);
 }
 
-unsigned int Webcam::GetPalette(void)
+unsigned int WebcamV4L::GetPalette(void)
 {
 	return (vPic.palette);
 }
 
-int Webcam::SetBrightness(int v)
+int WebcamV4L::setBrightness(int v)
 {
 	if ((v >= 0) && (v <= 65535))
 	{
@@ -254,7 +242,7 @@ int Webcam::SetBrightness(int v)
 	return vPic.brightness;
 }
 
-int Webcam::SetContrast(int v)
+int WebcamV4L::setContrast(int v)
 {
 	if ((v >= 0) && (v <= 65535))
 	{
@@ -273,7 +261,7 @@ int Webcam::SetContrast(int v)
 	return vPic.contrast;
 }
 
-int Webcam::SetColour(int v)
+int WebcamV4L::setColor(int v)
 {
 	if ((v >= 0) && (v <= 65535))
 	{
@@ -292,7 +280,7 @@ int Webcam::SetColour(int v)
 	return vPic.colour;
 }
 
-int Webcam::SetHue(int v)
+int WebcamV4L::setHue(int v)
 {
 	if ((v >= 0) && (v <= 65535))
 	{
@@ -311,139 +299,36 @@ int Webcam::SetHue(int v)
 	return vPic.hue;
 }
 
-int Webcam::SetTargetFps(wcClient *client, int f)
-{
-	if ((f >= 1) && (f <= 30) && (client != 0))
-	{
-		WebcamLock.lock();
-		client->fps = f;
-		client->interframeTime = 1000/f;
-		WebcamLock.unlock();
-	}
-	else
-		kdDebug() << "Invalid FPS parameter" << endl;
 
-	return fps;
-}
-
-int Webcam::GetActualFps()
-{
-	return actualFps;
-}
-
-void Webcam::GetMaxSize(int *x, int *y)
+void WebcamV4L::getMaxSize(int *x, int *y)
 {
 	*y=vCaps.maxheight; *x=vCaps.maxwidth;
 };
 
-void Webcam::GetMinSize(int *x, int *y)
+void WebcamV4L::getMinSize(int *x, int *y)
 {
 	*y=vCaps.minheight; *x=vCaps.minwidth;
 };
 
-void Webcam::GetCurSize(int *x, int *y)
+void WebcamV4L::getCurSize(int *x, int *y)
 {
 	*y = vWin.height;
 	*x = vWin.width;
 };
 
-int Webcam::isGreyscale()
+int WebcamV4L::isGreyscale()
 {
 	return ((vCaps.type & VID_TYPE_MONOCHROME) ? true : false);
 };
 
-wcClient *Webcam::RegisterClient(int format, int fps, QObject *eventWin)
-{
-	wcClient *client = new wcClient;
 
-	if (fps == 0)
-	{
-		fps = 10;
-		kdDebug() << "Webcam requested fps of zero\n";
-	}
-
-	client->eventWindow = eventWin;
-	client->fps = fps;
-	client->actualFps = fps;
-	client->interframeTime = 1000/fps;
-	client->timeLastCapture = QTime::currentTime();
-	client->framesDelivered = 0;
-
-	switch (format)
-	{
-	case VIDEO_PALETTE_RGB24:   client->frameSize = RGB24_LEN(width(), height());   client->format = PIX_FMT_BGR24;      break;
-	case VIDEO_PALETTE_RGB32:   client->frameSize = RGB32_LEN(width(), height());   client->format = PIX_FMT_RGBA32;     break;
-	case VIDEO_PALETTE_YUV420P: client->frameSize = YUV420P_LEN(width(), height()); client->format = PIX_FMT_YUV420P;    break;
-	case VIDEO_PALETTE_YUV422P: client->frameSize = YUV422P_LEN(width(), height()); client->format = PIX_FMT_YUV422P;    break;
-	default:
-		kdDebug() << "Webcam: Attempt to register unsupported Webcam format\n";
-		delete client;
-		return 0;
-	}
-
-	// Create some buffers for the client
-	for (int i=0; i<WC_CLIENT_BUFFERS; i++)
-		client->BufferList.append(new unsigned char[client->frameSize]);
-
-	WebcamLock.lock();
-	wcClientList.append(client);
-	WebcamLock.unlock();
-
-	return client;
-}
-
-void Webcam::UnregisterClient(wcClient *client)
-{
-	WebcamLock.lock();
-	wcClientList.remove(client);
-	WebcamLock.unlock();
-
-	// Delete client buffers
-	unsigned char *it;
-	while ((it=client->BufferList.first()) != 0)
-	{
-		client->BufferList.remove(it);
-		delete it;
-	}
-
-	// Delete client buffers in the FULL queue
-	while ((it=client->FullBufferList.first()) != 0)
-	{
-		client->FullBufferList.remove(it);
-		delete it;
-	}
-
-	if (actualFps < client->fps)
-		kdDebug() << "Client wanted a FPS of " << client->fps << " but the camera delivered " << actualFps << endl;
-
-	delete client;
-}
-
-unsigned char *Webcam::GetVideoFrame(wcClient *client)
-{
-	WebcamLock.lock();
-	unsigned char *buffer = client->FullBufferList.first();
-	if (buffer)
-		client->FullBufferList.remove(buffer);
-	WebcamLock.unlock();
-	return buffer;
-}
-
-void Webcam::FreeVideoBuffer(wcClient *client, unsigned char *buffer)
-{
-	WebcamLock.lock();
-	if (buffer)
-		client->BufferList.append(buffer);
-	WebcamLock.unlock();
-}
-
-void Webcam::StartThread()
+void WebcamV4L::StartThread()
 {
 	killWebcamThread = false;
 	start();
 }
 
-void Webcam::KillThread()
+void WebcamV4L::KillThread()
 {
 	if (!killWebcamThread) // Is the thread even running?
 	{
@@ -457,141 +342,34 @@ void Webcam::KillThread()
 	}
 }
 
-void Webcam::run(void)
+void WebcamV4L::run(void)
 {
 	WebcamThreadWorker();
 }
 
-void Webcam::WebcamThreadWorker()
+void WebcamV4L::WebcamThreadWorker()
 {
 	int len=0;
 
 	while((!killWebcamThread) && (hDev > 0))
 	{
-		if ((len = read(hDev, picbuff1, frameSize)) == frameSize)
+		if ((len = read(hDev, m_picbuff, frameSize)) == frameSize)
 		{
 			if (killWebcamThread)
 				break;
 
-			ProcessFrame(picbuff1, frameSize);
+			ProcessFrame(m_picbuff, frameSize);
 		}
 		else
 			kdDebug() << "Error reading from webcam; got " << len << " bytes; expected " << frameSize << endl;
+		
+		msleep(1000/19); //sleep for less than 20fps
+		
 	}
 }
 
-void Webcam::ProcessFrame(unsigned char *frame, int fSize)
-{
-	//QImage im;
-	//im.load("/home/maldn/Desktop.old/Pornomaldn.png");
-	//im.scale(WCWIDTH,WCHEIGHT);
-	//frame = im.bits();
-	//wcClient *it;
-	//it=wcClientList.first();
-	//unsigned char *buffer = it->BufferList.first();
-	//AVPicture image_in2, image_out2;
-	//avpicture_fill(&image_in2,  (uint8_t *)frame, PIX_FMT_RGBA32, WCWIDTH, WCHEIGHT);
-	//avpicture_fill(&image_out2, (uint8_t *)buffer, PIX_FMT_YUV420P, WCWIDTH, WCHEIGHT);
-	//img_convert(&image_out, it->format, &image_in, wcFormat, WCWIDTH, WCHEIGHT);
-	//if(img_convert(&image_out2, PIX_FMT_YUV420P, &image_in2, PIX_FMT_RGBA32, WCWIDTH, WCHEIGHT) == -1)
-	//	kdDebug() << "convert failed1" << endl;
 
-
-	static unsigned char tempBuffer[MAX_RGB_704_576];
-
-	WebcamLock.lock(); // Prevent changes to client registration structures whilst processing
-
-	// Capture info to work out camera FPS
-	if (frameCount++ > 0)
-		totalCaptureMs += cameraTime.msecsTo(QTime::currentTime());
-	cameraTime = QTime::currentTime();
-	if (totalCaptureMs != 0)
-		actualFps = (frameCount*1000)/totalCaptureMs;
-
-	// Check if the webcam needs flipped (some webcams deliver pics upside down)
-	if (wcFlip)
-	{
-		switch(wcFormat)
-		{
-		case PIX_FMT_YUV420P:
-			flipYuv420pImage(frame, width(), height(), tempBuffer);
-			frame = tempBuffer;
-			break;
-		case PIX_FMT_YUV422P:
-			flipYuv422pImage(frame, width(), height(), tempBuffer);
-			frame = tempBuffer;
-			break;
-		case PIX_FMT_RGBA32:
-			flipRgb32Image(frame, width(), height(), tempBuffer);
-			frame = tempBuffer;
-			break;
-		case PIX_FMT_BGR24:
-		case PIX_FMT_RGB24:
-			flipRgb24Image(frame, width(), height(), tempBuffer);
-			frame = tempBuffer;
-			break;
-		default:
-			kdDebug() << "No routine to flip this type\n";
-			break;
-		}
-	}
-
-	// Format convert for each registered client.  Note this is optimised for not having
-	// multiple clients requesting the same format, as that is unexpected
-	wcClient *it;
-	for (it=wcClientList.first(); it; it=wcClientList.next())
-	{
-		// Meet the FPS rate of the requesting client
-		if ((it->timeLastCapture).msecsTo(QTime::currentTime()) > it->interframeTime)
-		{
-			// Get a buffer for the frame. If no "free" buffers try and reused an old one
-			unsigned char *buffer = it->BufferList.first();
-			//buffer = it->BufferList.first();
-
-			if (buffer != 0)
-			{
-				it->BufferList.remove(buffer);
-				it->FullBufferList.append(buffer);
-			}
-			else
-				buffer = it->FullBufferList.first();
-
-			if (buffer != 0)
-			{
-				it->framesDelivered++;
-				// Format conversion
-				if (wcFormat != it->format)
-				{
-					//kdDebug() << "format conversion" << endl;
-					AVPicture image_in, image_out;
-					avpicture_fill(&image_in,  (uint8_t *)frame, wcFormat, width(), height());
-					avpicture_fill(&image_out, (uint8_t *)buffer, it->format, width(), height());
-					//img_convert(&image_out, it->format, &image_in, wcFormat, WCWIDTH, WCHEIGHT);
-					if(img_convert(&image_out, it->format, &image_in, wcFormat, width(), height()) == -1)
-						kdDebug() << "convert failed" << endl;
-					//YUV420PtoRGB32((int)vWin.width, (int)vWin.height, (int)vWin.width, frame, buffer, sizeof(buffer));
-
-					//QImage Image(buffer, WCWIDTH, WCHEIGHT, 32, (QRgb *)0, 0, QImage::LittleEndian);
-					//Image.save("/home/maldn/test.png","PNG");
-					QApplication::postEvent(it->eventWindow, new WebcamEvent(WebcamEvent::FrameReady, it));
-				}
-				else
-				{
-					memcpy(buffer, frame, fSize);
-					QApplication::postEvent(it->eventWindow, new WebcamEvent(WebcamEvent::FrameReady, it));
-				}
-			}
-			else
-				kdDebug() << "No webcam buffers\n";
-
-			it->timeLastCapture = QTime::currentTime();
-		}
-	}
-
-	WebcamLock.unlock();
-}
-
-Webcam::~Webcam()
+WebcamV4L::~WebcamV4L()
 {
 	if (hDev > 0)
 		camClose();

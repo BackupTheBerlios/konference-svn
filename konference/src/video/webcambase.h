@@ -22,10 +22,9 @@
 
 #include <qobject.h>
 #include <qptrlist.h>
-//#include <qtimer.h>
 #include <qdatetime.h>
+#include <qthread.h>
 
-#include <linux/videodev.h>
 
 #define RGB24_LEN(w,h)      ( (w) * (h) * 3)
 #define RGB32_LEN(w,h)      ( (w) * (h) * 4)
@@ -40,6 +39,7 @@
 
 #define WC_CLIENT_BUFFERS   2
 
+#include "../codecs/h263.h"
 
 struct wcClient
 {
@@ -86,11 +86,56 @@ public:
 
 	~WebcamBase();
 
+	//some pure virtual functions that must be implemented
 	virtual int width()  = 0;
 	virtual int height() = 0;
 
+	virtual bool camOpen(QString WebcamName, int width, int height) = 0;
+	virtual void camClose(void) = 0;
+	
+	virtual int  setBrightness(int v) = 0;
+	virtual int  getBrightness(void) = 0;
+	
+	virtual int  setContrast(int v) = 0;
+	virtual int  getContrast(void) = 0;
+	
+	virtual int  setColor(int v) = 0;
+	virtual int  getColor(void) = 0;
+	
+	virtual int  setHue(int v) = 0;
+	virtual int  getHue(void) = 0;
+	
+	virtual QString getName(void) = 0;
+	
+	
+	int  setClientFps(wcClient *client, int fps);
+	int  getActualFps();
+	
+	void SetFlip(bool b) { wcFlip=b; }
+
+	void ProcessFrame(unsigned char *frame, int fSize);
+
+	unsigned char *GetVideoFrame(wcClient *client);
+	void FreeVideoBuffer(wcClient *client, unsigned char *buffer);
+
+	wcClient *RegisterClient(int format, int fps, QObject *eventWin);
+	void UnregisterClient(wcClient *client);
+	
 protected:
 	QPtrList<wcClient> wcClientList;
+
+	int actualFps;
+	int m_wcFormat;
+	unsigned char *m_picbuff;
+	
+	QTime cameraTime;
+	int frameCount;
+	int totalCaptureMs;
+
+	bool wcFlip;
+
+	
+	QMutex WebcamLock;
 
 };
 

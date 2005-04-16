@@ -60,7 +60,7 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	sipStack->UiOpened(this);
 
 	//old:
-	m_webcam = new Webcam();
+	m_webcam = new WebcamV4L();
 	//new: m_webcam = new Webcam(this);
 
 	int resolutionShift = KonferenceSettings::videoSize();
@@ -78,7 +78,7 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	kdDebug() << "Res: " << w << "x" << h << endl;
 
 	//old:
-	kdDebug() << "Video device: " << Webcam::devName(KonferenceSettings::videoDevice()) << endl;
+	kdDebug() << "Video device: " << WebcamV4L::devName(KonferenceSettings::videoDevice()) << endl;
 	//new: kdDebug() << "Video device: " << Webcam::getWebcamName(KonferenceSettings::videoDevice()) << endl;
 
 	//old:
@@ -93,7 +93,8 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 
 	//register webcam-clients and tell the webcam module to send the events to "this"
 	//old: we dont have clients anymore
-	m_localWebcamClient = m_webcam->RegisterClient(VIDEO_PALETTE_RGB32, 20, this);
+	//m_localWebcamClient = m_webcam->RegisterClient(VIDEO_PALETTE_RGB32, 20, this);
+	m_localWebcamClient = m_webcam->RegisterClient(PIX_FMT_RGBA32, 20, this);
 
 	//connect(m_webcam, SIGNAL(newFrameReady()),this, SLOT(newFrame()));
 
@@ -336,7 +337,7 @@ void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int vi
 	*/
 	//kdDebug() << "startVideoRTP: localport: " << KonferenceSettings::localVideoPort() << endl;
 	//old:
-	m_txWebcamClient = m_webcam->RegisterClient(VIDEO_PALETTE_YUV420P, 5, this);
+	m_txWebcamClient = m_webcam->RegisterClient(PIX_FMT_YUV420P, 5, this);
 
 	/*
 	h263->H263StartEncoder(m_webcam->width(), m_webcam->height(), 5);
@@ -463,10 +464,10 @@ void KonferencePart::showConfigDialog()
 
 void KonferencePart::reloadConfig()
 {
-	m_webcam->SetBrightness(KonferenceSettings::brightness());
-	m_webcam->SetContrast(KonferenceSettings::contrast());
-	m_webcam->SetColour(KonferenceSettings::color());
-	m_webcam->SetHue(KonferenceSettings::hue());
+	m_webcam->setBrightness(KonferenceSettings::brightness());
+	m_webcam->setContrast(KonferenceSettings::contrast());
+	m_webcam->setColor(KonferenceSettings::color());
+	m_webcam->setHue(KonferenceSettings::hue());
 }
 
 void KonferencePart::setupActions()

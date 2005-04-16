@@ -57,6 +57,7 @@ void KonferenceVideoWidget::resizeEvent( QResizeEvent *e )
 
 void KonferenceVideoWidget::redraw()
 {
+	//kdDebug() << "VideoWidget::redraw()" << endl;
 	m_tmp_pixmap.resize( size() );
 
 	QPainter p( &m_tmp_pixmap, this );

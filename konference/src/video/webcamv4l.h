@@ -22,99 +22,83 @@
 #ifndef WEBCAM_H_
 #define WEBCAM_H_
 
-#include <qsqldatabase.h>
-#include <qregexp.h>
-
-#include <qthread.h>
-#include <qimage.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
 #include <sys/ioctl.h>
+#include <linux/videodev.h>
 
 #include "webcambase.h"
 
-/*
-#define WCWIDTH     vWin.width
-#define WCHEIGHT    vWin.height
-*/
 
-class Webcam : public WebcamBase, QThread
+class WebcamV4L : public WebcamBase, QThread
 {
 
 public:
 
-	Webcam();
-	virtual ~Webcam(void);
+	WebcamV4L();
+	//functions declared in QThread
+	virtual ~WebcamV4L();
 	virtual void run();
+
+	
+	
+	//functions declared in WebcamBase
+	virtual bool camOpen(QString WebcamName, int width, int height);
+	virtual void camClose(void);
+	
+	virtual int  setBrightness(int v);
+	virtual int  getBrightness(void) { return (vPic.brightness);};
+	
+	virtual int  setContrast(int v);
+	virtual int  getContrast(void) { return (vPic.contrast);};
+	
+	virtual int  setColor(int v);
+	virtual int  getColor(void) { return (vPic.colour);};
+	
+	virtual int  setHue(int v);
+	virtual int  getHue(void) { return (vPic.hue);};
+	
+	virtual QString getName(void) { return vCaps.name; };
+
 
 	/**
 	 * Function that returns a "user-friendly" name of the cam. 
 	 * E.g something like "Philips 646 webcam"
 	 */
 	static QString devName(QString WebcamName);
-
-	bool camOpen(QString WebcamName, int width, int height);
-	void camClose(void);
-	bool SetPalette(unsigned int palette);
-	unsigned int GetPalette(void);
-	int  SetBrightness(int v);
-	int  SetContrast(int v);
-	int  SetColour(int v);
-	int  SetHue(int v);
-	int  GetBrightness(void) { return (vPic.brightness);};
-	int  GetColour(void) { return (vPic.colour);};
-	int  GetContrast(void) { return (vPic.contrast);};
-	int  GetHue(void) { return (vPic.hue);};
-	QString GetName(void) { return vCaps.name; };
-	void SetFlip(bool b) { wcFlip=b; }
-
-
-	int  SetTargetFps(wcClient *client, int fps);
-	int  GetActualFps();
-	void GetMaxSize(int *x, int *y);
-	void GetMinSize(int *x, int *y);
-	void GetCurSize(int *x, int *y);
+	
+	//these two are not used anywhere
+	void getMaxSize(int *x, int *y);
+	void getMinSize(int *x, int *y);
+	
 	virtual int width(){return vWin.width;};
 	virtual int height(){return vWin.height;};
 	int isGreyscale(void);
 
 
-	void ProcessFrame(unsigned char *frame, int fSize);
 
-	wcClient *RegisterClient(int format, int fps, QObject *eventWin);
-	void UnregisterClient(wcClient *client);
-	unsigned char *GetVideoFrame(wcClient *client);
-	void FreeVideoBuffer(wcClient *client, unsigned char *buffer);
-
+	
 private:
 	void StartThread();
 	void KillThread();
 	void WebcamThreadWorker();
 
-	QMutex WebcamLock;
-
-	void SetSize(int width, int height);
-
+	void setSize(int width, int height);
+	void getCurSize(int *x, int *y);
+	
+	
+	bool SetPalette(unsigned int palette);
+	unsigned int GetPalette(void);
+	
 	void readCaps(void);
 
 	int hDev;
 	QString DevName;
-	unsigned char *picbuff1;
-	int imageLen;
 	int frameSize;
-	int fps;
-	int actualFps;
 	bool killWebcamThread;
-	int wcFormat;
-	bool wcFlip;
 
-
-	QTime cameraTime;
-	int frameCount;
-	int totalCaptureMs;
 
 	// OS specific data structures
 
