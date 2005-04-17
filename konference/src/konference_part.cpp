@@ -62,7 +62,15 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 
 	//old:
 	//m_webcam = new WebcamV4L();
-	m_webcam = new WebcamImage();
+	if(KonferenceSettings::videoPlugin() == KonferenceSettings::EnumVideoPlugin::V4L)
+	{
+		m_webcam = new WebcamV4L();
+		//kdDebug() << "plugin: " << KonferenceSettings::audioPlugin() << endl;
+	}
+	else
+	{
+		m_webcam = new WebcamImage();
+	}
 	//new: m_webcam = new Webcam(this);
 
 	int resolutionShift = KonferenceSettings::videoSize();
@@ -86,11 +94,11 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	//old:
 	if(!m_webcam->camOpen(KonferenceSettings::videoDevice(), w, h))
 		//new: if(!m_webcam->openCam(KonferenceSettings::videoDevice(), w, h))
-		KMessageBox::error(0,"error opening the webcam. expect things to crash...");
+		KMessageBox::error(0,QString("error opening the webcam. expect things to crash...").arg(KonferenceSettings::videoDevice()));
 
 	//lets see if the webcam opened at the desired size.
 	if(m_webcam->width() != w || m_webcam->height() != h)
-		KMessageBox::error(0,QString("webcam opened at %1x%2 instead of the requested %3x%4").arg(m_webcam->width()).arg(m_webcam->height()).arg(h).arg(w));
+		KMessageBox::error(0,QString("webcam opened at %1x%2 instead of the requested %3x%4").arg(m_webcam->width()).arg(m_webcam->height()).arg(w).arg(h));
 	//m_webcam->camOpen(KonferenceSettings::videoDevice(), 352, 288);
 
 	//register webcam-clients and tell the webcam module to send the events to "this"
@@ -399,10 +407,8 @@ void KonferencePart::TransmitLocalWebcamImage()
 	if (/*yuvFrame != 0 && */m_rtpVideo)
 	{
 		//TODO find better fix for odd quickcam resolutions
-		int txWidth = 176;
-	int txHeight = 144;
-		//int txWidth = m_webcam->width();//176;
-		//int txHeight = m_webcam->height();//144;
+		int txWidth = m_webcam->width();//176;
+		int txHeight = m_webcam->height();//144;
 		if((m_webcam->width() < txWidth) || (m_webcam->height() < txWidth))
 			cropYuvImage(yuvFrame, m_webcam->width(), m_webcam->height(), 0, 0, txWidth, txHeight, yuvBuffer);
 		else
@@ -421,10 +427,8 @@ void KonferencePart::TransmitLocalWebcamImage()
 			{
 				memcpy(vb->video, encFrame, encLen); // Optimisation to get rid of this copy may be possible, check H.263 stack
 				vb->len = encLen;
-				vb->w = 176;
-				vb->h = 144;
-				//vb->w = m_webcam->width();//176;
-				//vb->h = m_webcam->height();//144;
+				vb->w = m_webcam->width();//176;
+				vb->h = m_webcam->height();//144;
 				if (!m_rtpVideo->queueVideo(vb))
 				{
 					kdDebug()  << "KonferencePart::TransmitLocalWebcamImage(): Could not queue RTP Video frame for transmission\n";

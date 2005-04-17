@@ -34,7 +34,7 @@
                     <property name="name">
                         <cstring>unnamed</cstring>
                     </property>
-                    <widget class="QCheckBox" row="1" column="0">
+                    <widget class="QCheckBox" row="2" column="0">
                         <property name="name">
                             <cstring>kcfg_videoReception</cstring>
                         </property>
@@ -45,7 +45,7 @@
                             <string>Enable video reception by default</string>
                         </property>
                     </widget>
-                    <widget class="QCheckBox" row="2" column="0">
+                    <widget class="QCheckBox" row="3" column="0">
                         <property name="name">
                             <cstring>kcfg_videoTransmission</cstring>
                         </property>
@@ -56,28 +56,17 @@
                             <string>Enable video transmission by default</string>
                         </property>
                     </widget>
-                    <widget class="QGroupBox" row="0" column="0">
+                    <widget class="QGroupBox" row="1" column="0">
                         <property name="name">
                             <cstring>groupBox5</cstring>
                         </property>
                         <property name="title">
-                            <string>Video Device</string>
+                            <string>Plugin Specific Options</string>
                         </property>
                         <grid>
                             <property name="name">
                                 <cstring>unnamed</cstring>
                             </property>
-                            <widget class="QLabel" row="0" column="0">
-                                <property name="name">
-                                    <cstring>textLabel1_8</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Choose your video-device...TODO - better/more descriptive text (applies also to most dialogs)</string>
-                                </property>
-                                <property name="alignment">
-                                    <set>WordBreak|AlignVCenter</set>
-                                </property>
-                            </widget>
                             <widget class="QLayoutWidget" row="1" column="0">
                                 <property name="name">
                                     <cstring>layout2</cstring>
@@ -155,6 +144,62 @@ If no image is selected, or the path to the image is incorrect, the konference-l
                                 </property>
                                 <property name="alignment">
                                     <set>WordBreak|AlignVCenter</set>
+                                </property>
+                            </widget>
+                        </grid>
+                    </widget>
+                    <widget class="QButtonGroup" row="0" column="0">
+                        <property name="name">
+                            <cstring>buttonGroup1</cstring>
+                        </property>
+                        <property name="title">
+                            <string>Video Plugin</string>
+                        </property>
+                        <grid>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <widget class="QLayoutWidget" row="1" column="0">
+                                <property name="name">
+                                    <cstring>layout3</cstring>
+                                </property>
+                                <hbox>
+                                    <property name="name">
+                                        <cstring>unnamed</cstring>
+                                    </property>
+                                    <widget class="QLabel">
+                                        <property name="name">
+                                            <cstring>textLabel1</cstring>
+                                        </property>
+                                        <property name="text">
+                                            <string>Plugin:</string>
+                                        </property>
+                                    </widget>
+                                    <widget class="QComboBox">
+                                        <item>
+                                            <property name="text">
+                                                <string>Video for Linux (V4L)</string>
+                                            </property>
+                                        </item>
+                                        <item>
+                                            <property name="text">
+                                                <string>Image</string>
+                                            </property>
+                                        </item>
+                                        <property name="name">
+                                            <cstring>kcfg_videoPlugin</cstring>
+                                        </property>
+                                    </widget>
+                                </hbox>
+                            </widget>
+                            <widget class="QLabel" row="0" column="0">
+                                <property name="name">
+                                    <cstring>textLabel2</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>put some text here... blah blah blah
+
+you know, i love designing GUIs :P</string>
                                 </property>
                             </widget>
                         </grid>

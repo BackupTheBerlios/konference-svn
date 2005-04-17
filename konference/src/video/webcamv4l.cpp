@@ -184,22 +184,24 @@ void WebcamV4L::readCaps()
 bool WebcamV4L::setSize(int width, int height)
 {
 	// Note you can't call this whilst the webcam is open because all the buffers will be the wrong size
-	if (hDev > 0)
-	{
+	//if (hDev > 0)
+	//{
 		memset(&vWin, 0, sizeof(struct video_window));
 		vWin.width = width;
 		vWin.height = height;
 
+		//in either case readCaps must be called, or we dont know the actual size the cam opened
 		if (ioctl(hDev, VIDIOCSWIN, &vWin) == -1)
 		{
 			kdDebug() << "Webcam: Error setting capture size " << width << "x" << height << endl;
+			readCaps();
 			return false;
 		}
 
 		readCaps();
 		return true;
-	}
-	return false;
+	//}
+	//return false;
 }
 
 bool WebcamV4L::SetPalette(unsigned int palette)
@@ -364,9 +366,9 @@ void WebcamV4L::WebcamThreadWorker()
 		{
 			if (killWebcamThread)
 				break;
-			m_picbuffMutex.lock();
+			//m_picbuffMutex.lock();
 			ProcessFrame(m_picbuff, frameSize);
-			m_picbuffMutex.unlock();
+			//m_picbuffMutex.unlock();
 		}
 		else
 			kdDebug() << "Error reading from webcam; got " << len << " bytes; expected " << frameSize << endl;

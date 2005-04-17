@@ -46,6 +46,14 @@
 	</group>
 
 	<group name="video">
+		<entry name="videoPlugin" type="Enum">
+		<label>Video Plugin</label>
+		<choices>
+			<choice name="V4L"/>
+			<choice name="Image"/>
+		</choices>
+		</entry>
+		
 		<entry name="videoDevice" type="String">
 		<default>/dev/video0</default>
 		</entry>
