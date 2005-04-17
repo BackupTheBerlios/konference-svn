@@ -76,8 +76,6 @@ protected:
 	virtual bool openFile(){return false;};
 
 protected slots:
-	void newFrame();
-	
 	/**
 	 * Creates and shows the configuration dialog for global options
 	 */
@@ -96,7 +94,6 @@ protected slots:
 	
 	void startAudioRTP(QString remoteIP, int remoteAudioPort, int audioPayload, int dtmfPayload);
 	void startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes);
-	//void startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload);
 	
 	void stopAudioRTP();
 	void stopVideoRTP();

@@ -49,30 +49,24 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 {
 	m_parent = parentWidget;
 
+	//"i dont want to be marked unuseb by the compiler", says widgetName...
+	if(widgetName){/* if true, do nothing :) */}
+	
 	// we need an instance
 	setInstance( KonferencePartFactory::instance() );
 
-	// this should be your custom internal widget
-	m_widget = new KonferenceVideoWidget( parentWidget, widgetName );
+	// widget that displays video
+	m_widget = new KonferenceVideoWidget( parentWidget, "m_widget" );
 
 	sipStack = new SipContainer();
 	//tell it that we want to receive the events
-	//TODO move this to the ctor
 	sipStack->UiOpened(this);
 
-	//old:
-	//m_webcam = new WebcamV4L();
 	if(KonferenceSettings::videoPlugin() == KonferenceSettings::EnumVideoPlugin::V4L)
-	{
 		m_webcam = new WebcamV4L();
-		//kdDebug() << "plugin: " << KonferenceSettings::audioPlugin() << endl;
-	}
 	else
-	{
 		m_webcam = new WebcamImage();
-	}
-	//new: m_webcam = new Webcam(this);
-
+	
 	int resolutionShift = KonferenceSettings::videoSize();
 	//we shift the 4cif resolution by the index of our combobox
 	//since they are ordered and always multiplied by 2 we can do this quite easily
@@ -87,27 +81,19 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	}
 	kdDebug() << "Res: " << w << "x" << h << endl;
 
-	//old:
-	//kdDebug() << "Video device: " << WebcamV4L::devName(KonferenceSettings::videoDevice()) << endl;
-	//new: kdDebug() << "Video device: " << Webcam::getWebcamName(KonferenceSettings::videoDevice()) << endl;
 
-	//old:
 	if(!m_webcam->camOpen(KonferenceSettings::videoDevice(), w, h))
-		//new: if(!m_webcam->openCam(KonferenceSettings::videoDevice(), w, h))
 		KMessageBox::error(0,QString("error opening the webcam. expect things to crash...").arg(KonferenceSettings::videoDevice()));
-
+	//TODO add fallback if camOpen() fails above
+	
 	//lets see if the webcam opened at the desired size.
 	if(m_webcam->width() != w || m_webcam->height() != h)
 		KMessageBox::error(0,QString("webcam opened at %1x%2 instead of the requested %3x%4").arg(m_webcam->width()).arg(m_webcam->height()).arg(w).arg(h));
-	//m_webcam->camOpen(KonferenceSettings::videoDevice(), 352, 288);
-
+	
 	//register webcam-clients and tell the webcam module to send the events to "this"
-	//old: we dont have clients anymore
-	//m_localWebcamClient = m_webcam->RegisterClient(VIDEO_PALETTE_RGB32, 20, this);
-	m_localWebcamClient = m_webcam->RegisterClient(PIX_FMT_RGBA32, 20, this);
+	m_localWebcamClient = m_webcam->RegisterClient(PIX_FMT_RGBA32, 20/*fps*/, this);
 
-	//connect(m_webcam, SIGNAL(newFrameReady()),this, SLOT(newFrame()));
-
+	
 	// notify the part that this is our internal widget
 	setWidget(m_widget);
 
@@ -121,32 +107,18 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 
 	m_rtpVideo = 0;
 	m_rtpAudio = 0;
-
 	h263 = new H263Container();
 
 	// Generate a self-event to get current SIP Stack state
 	QApplication::postEvent(this, new SipEvent(SipEvent::SipStateChange));
 }
 
-//unused for now
-void KonferencePart::newFrame()
-{
-	//TODO dont let the following functions get the image from the cam directly (get it here and pass it to the functions)
-	kdDebug() << "mooh" << endl;
-	DrawLocalWebcamImage();
-	TransmitLocalWebcamImage();
-
-}
-
 void KonferencePart::customEvent(QCustomEvent *event)
 {
 	switch ((int)event->type())
 	{
-
 	case WebcamEvent::FrameReady:
 		{
-			//kdDebug() << "KonferencePart::customEvent: type=WebcamEvent::FrameReady" << endl;
-
 			WebcamEvent *we = (WebcamEvent *)event;
 			if (we->getClient() == m_localWebcamClient)
 			{
@@ -232,7 +204,6 @@ void KonferencePart::ProcessSipNotification()
 
 void KonferencePart::ProcessSipStateChange()
 {
-	//TODO unused ->  bool inAudioOnly;
 	int OldState = State;
 
 	// Poll the FSM for network events
@@ -244,7 +215,6 @@ void KonferencePart::ProcessSipStateChange()
 		// We were displaying the answer dialog, make sure its gone
 		if (OldState == SIP_ICONNECTING)
 		{
-			//closeCallPopup();
 			kdDebug() << "ProcessSipStateChange: oldstate = SIP_ICONNECTING" << endl;
 		}
 
@@ -283,7 +253,6 @@ void KonferencePart::ProcessSipStateChange()
 			                           dtmfPayload, remoteVideoPort, videoPayload, videoCodec,
 			                           rxVideoResolution);
 			startAudioRTP(remoteIp, remoteAudioPort, audioPayload, dtmfPayload);
-			//startVideoRTP(remoteIp, remoteVideoPort, videoPayload);
 			startVideoRTP(remoteIp, remoteVideoPort, videoPayload, rxVideoResolution);
 			m_widget->setHowToDisplay(KonferenceVideoWidget::BOTH_BIG_REMOTE);
 			m_connectAction->setEnabled(false);
@@ -307,7 +276,6 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 	m_rtpAudio = new rtp((QWidget*)this, KonferenceSettings::localAudioPort(), remoteIP,
 	                          remoteAudioPort, audioPayload, dtmfPayload,
 	                          KonferenceSettings::inputDevice(), KonferenceSettings::outputDevice());
-
 }
 
 void KonferencePart::stopAudioRTP()
@@ -317,7 +285,6 @@ void KonferencePart::stopAudioRTP()
 	m_rtpAudio = 0;
 }
 
-//void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes)
 void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes)
 {
 	//some safe defaults
@@ -344,17 +311,9 @@ void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int vi
 		h = 576;
 	}
 
-	//kdDebug() << "startVideoRTP: localport: " << KonferenceSettings::localVideoPort() << endl;
-	//old:
 	m_txWebcamClient = m_webcam->RegisterClient(PIX_FMT_YUV420P, 5, this);
 
-	/*
-	h263->H263StartEncoder(m_webcam->width(), m_webcam->height(), 5);
 
-	h263->H263StartDecoder(w, h);
-	m_rtpVideo = new rtpVideo (this, KonferenceSettings::localVideoPort(), remoteIP,
-	                           remoteVideoPort, videoPayload,RTP_TX_VIDEO, RTP_RX_VIDEO);
-	*/
 	h263->H263StartEncoder(m_webcam->width(), m_webcam->height(), 5);
 	h263->H263StartDecoder(w, h);
 	m_rtpVideo = new rtpVideo ((QObject*)this, KonferenceSettings::localVideoPort(), remoteIP,
@@ -363,7 +322,6 @@ void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int vi
 
 void KonferencePart::stopVideoRTP()
 {
-	//old:
 	m_webcam->UnregisterClient(m_txWebcamClient);
 
 	h263->H263StopEncoder();
@@ -375,7 +333,6 @@ void KonferencePart::stopVideoRTP()
 
 void KonferencePart::ProcessRxVideoFrame()
 {
-	QImage ScaledImage;
 	VIDEOBUFFER *v;
 
 	//kdDebug() << "KonferencePart::ProcessRxVideoFrame()" << endl;
@@ -399,9 +356,8 @@ void KonferencePart::ProcessRxVideoFrame()
 
 void KonferencePart::TransmitLocalWebcamImage()
 {
-	//old:
 	unsigned char *yuvFrame = m_webcam->GetVideoFrame(m_txWebcamClient);
-	//unsigned char *yuvFrame = m_webcam->getFrame(0/*yuv420p*/);
+	
 	int encLen;
 	if (/*yuvFrame != 0 && */m_rtpVideo)
 	{
@@ -436,23 +392,17 @@ void KonferencePart::TransmitLocalWebcamImage()
 			}
 		}
 	}
-	//old:
 	m_webcam->FreeVideoBuffer(m_txWebcamClient, yuvFrame);
 }
 
 void KonferencePart::DrawLocalWebcamImage()
 {
-
-	//old:
 	unsigned char *rgb32Frame = m_webcam->GetVideoFrame(m_localWebcamClient);
-	//unsigned char *rgb32Frame = m_webcam->getFrame(1/*rgb32*/);
-
+	
 	QImage image(rgb32Frame, m_webcam->width(), m_webcam->height(), 32, (QRgb *)0, 0, QImage::LittleEndian);
-	//QImage image(*m_webcam->getFrame());
 	KonferenceNewImageEvent* ce = new KonferenceNewImageEvent( image, KonferenceNewImageEvent::LOCAL );
 	QApplication::postEvent( m_widget, ce );  // Qt will delete the event when done-
 
-	//old:
 	m_webcam->FreeVideoBuffer(m_localWebcamClient, rgb32Frame);
 }
 
@@ -473,24 +423,6 @@ void KonferencePart::reloadConfig()
 	m_webcam->setContrast(KonferenceSettings::contrast());
 	m_webcam->setColor(KonferenceSettings::color());
 	m_webcam->setHue(KonferenceSettings::hue());
-	
-	
-	int resolutionShift = KonferenceSettings::videoSize();
-	//we shift the 4cif resolution by the index of our combobox
-	//since they are ordered and always multiplied by 2 we can do this quite easily
-	//except for sqcif(128x96)
-	int w = 704 >> resolutionShift;
-	int h = 576 >> resolutionShift;
-
-	if (resolutionShift == 3)
-	{
-		w = 128;
-		h = 96;
-	}
-	kdDebug() << "Res: " << w << "x" << h << endl;
-	
-	//TODO DONT DO THIS DURING A CALL!
-	//m_webcam->setSize(w,h);
 }
 
 void KonferencePart::setupActions()
@@ -502,7 +434,6 @@ void KonferencePart::setupActions()
 	m_cancelAction->setEnabled( false );
 	m_locationAction = new KWidgetAction( m_location, i18n( "&Location" ), CTRL + Key_L, this, SLOT( textEntered() ), actionCollection(), "location" );
 	m_locationAction->setAutoSized( true );
-
 }
 
 void KonferencePart::setupLocationComboBox()
@@ -537,8 +468,6 @@ void KonferencePart::addToHistory( const KURL &address )
 		}
 		m_location->setCurrentItem( 0 );
 	}
-	else
-		kdDebug() << "isempty" << endl;
 
 	KonferenceSettings::setCompletitionList(m_location->completionObject()->items());
 	KonferenceSettings::setHistoryList(m_location->historyItems());
@@ -567,8 +496,8 @@ KonferencePart::~KonferencePart()
 		delete sipStack;
 	if(m_rtpVideo)
 		delete m_rtpVideo;
-	//	if(rtpAudio)
-	//		delete rtpAudio;
+	if(m_rtpAudio)
+		delete m_rtpAudio;
 	if(h263)
 		delete h263;
 }
