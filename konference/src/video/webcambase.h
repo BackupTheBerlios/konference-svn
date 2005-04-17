@@ -90,6 +90,8 @@ public:
 	virtual int width()  = 0;
 	virtual int height() = 0;
 
+	virtual bool setSize(int width, int height) = 0;
+	
 	virtual bool camOpen(QString WebcamName, int width, int height) = 0;
 	virtual void camClose(void) = 0;
 	
@@ -126,7 +128,10 @@ protected:
 
 	int actualFps;
 	int m_wcFormat;
+	
 	unsigned char *m_picbuff;
+	//protect the buffer from being modifyed while accessing/processing it
+	QMutex m_picbuffMutex;
 	
 	QTime cameraTime;
 	int frameCount;

@@ -119,7 +119,7 @@ void rtpVideo::transmitQueuedVideo()
 	// ok as its only meant to produce 10-30 frames / second, and we should consume much quicker
 	rtpMutex.lock();
 	VIDEOBUFFER *queuedVideo = videoToTx;
-	videoToTx = 0;
+	//videoToTx = 0;
 	rtpMutex.unlock();
 
 	if (queuedVideo)
@@ -173,6 +173,7 @@ void rtpVideo::transmitQueuedVideo()
 		//cout << "Transmitted Video Frame, len " << queuedVideo->len << " as " << pkCnt << " packets\n";
 		freeVideoBuffer(queuedVideo);
 	}
+	videoToTx = 0;
 }
 
 void rtpVideo::destroyVideoBuffers()

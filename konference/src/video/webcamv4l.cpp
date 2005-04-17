@@ -23,7 +23,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-using namespace std;
 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -182,17 +181,25 @@ void WebcamV4L::readCaps()
 	}
 }
 
-void WebcamV4L::setSize(int width, int height)
+bool WebcamV4L::setSize(int width, int height)
 {
 	// Note you can't call this whilst the webcam is open because all the buffers will be the wrong size
-	memset(&vWin, 0, sizeof(struct video_window));
-	vWin.width = width;
-	vWin.height = height;
+	if (hDev > 0)
+	{
+		memset(&vWin, 0, sizeof(struct video_window));
+		vWin.width = width;
+		vWin.height = height;
 
-	if (ioctl(hDev, VIDIOCSWIN, &vWin) == -1)
-		kdDebug() << "Webcam: Error setting capture size " << width << "x" << height << endl;
+		if (ioctl(hDev, VIDIOCSWIN, &vWin) == -1)
+		{
+			kdDebug() << "Webcam: Error setting capture size " << width << "x" << height << endl;
+			return false;
+		}
 
-	readCaps();
+		readCaps();
+		return true;
+	}
+	return false;
 }
 
 bool WebcamV4L::SetPalette(unsigned int palette)
@@ -357,14 +364,15 @@ void WebcamV4L::WebcamThreadWorker()
 		{
 			if (killWebcamThread)
 				break;
-
+			m_picbuffMutex.lock();
 			ProcessFrame(m_picbuff, frameSize);
+			m_picbuffMutex.unlock();
 		}
 		else
 			kdDebug() << "Error reading from webcam; got " << len << " bytes; expected " << frameSize << endl;
-		
+
 		msleep(1000/19); //sleep for less than 20fps
-		
+
 	}
 }
 

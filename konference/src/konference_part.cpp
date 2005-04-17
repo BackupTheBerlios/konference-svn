@@ -35,6 +35,7 @@
 #include "konference_part.h"
 #include "videowidget.h"
 #include "video/webcamv4l.h"
+#include "video/webcamimage.h"
 #include "configdialog.h"
 #include "settings.h"
 #include "rtp/rtpvideo.h"
@@ -60,7 +61,8 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	sipStack->UiOpened(this);
 
 	//old:
-	m_webcam = new WebcamV4L();
+	//m_webcam = new WebcamV4L();
+	m_webcam = new WebcamImage();
 	//new: m_webcam = new Webcam(this);
 
 	int resolutionShift = KonferenceSettings::videoSize();
@@ -78,7 +80,7 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	kdDebug() << "Res: " << w << "x" << h << endl;
 
 	//old:
-	kdDebug() << "Video device: " << WebcamV4L::devName(KonferenceSettings::videoDevice()) << endl;
+	//kdDebug() << "Video device: " << WebcamV4L::devName(KonferenceSettings::videoDevice()) << endl;
 	//new: kdDebug() << "Video device: " << Webcam::getWebcamName(KonferenceSettings::videoDevice()) << endl;
 
 	//old:
@@ -425,7 +427,7 @@ void KonferencePart::TransmitLocalWebcamImage()
 				//vb->h = m_webcam->height();//144;
 				if (!m_rtpVideo->queueVideo(vb))
 				{
-					kdDebug()  << "Could not queue RTP Video frame for transmission\n";
+					kdDebug()  << "KonferencePart::TransmitLocalWebcamImage(): Could not queue RTP Video frame for transmission\n";
 					m_rtpVideo->freeVideoBuffer(vb);
 				}
 			}
@@ -468,6 +470,24 @@ void KonferencePart::reloadConfig()
 	m_webcam->setContrast(KonferenceSettings::contrast());
 	m_webcam->setColor(KonferenceSettings::color());
 	m_webcam->setHue(KonferenceSettings::hue());
+	
+	
+	int resolutionShift = KonferenceSettings::videoSize();
+	//we shift the 4cif resolution by the index of our combobox
+	//since they are ordered and always multiplied by 2 we can do this quite easily
+	//except for sqcif(128x96)
+	int w = 704 >> resolutionShift;
+	int h = 576 >> resolutionShift;
+
+	if (resolutionShift == 3)
+	{
+		w = 128;
+		h = 96;
+	}
+	kdDebug() << "Res: " << w << "x" << h << endl;
+	
+	//TODO DONT DO THIS DURING A CALL!
+	//m_webcam->setSize(w,h);
 }
 
 void KonferencePart::setupActions()

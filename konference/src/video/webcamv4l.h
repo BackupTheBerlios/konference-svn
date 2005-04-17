@@ -62,7 +62,8 @@ public:
 	
 	virtual QString getName(void) { return vCaps.name; };
 
-
+	virtual bool setSize(int width, int height);
+	
 	/**
 	 * Function that returns a "user-friendly" name of the cam. 
 	 * E.g something like "Philips 646 webcam"
@@ -85,7 +86,6 @@ private:
 	void KillThread();
 	void WebcamThreadWorker();
 
-	void setSize(int width, int height);
 	void getCurSize(int *x, int *y);
 	
 	
