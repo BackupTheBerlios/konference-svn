@@ -95,8 +95,8 @@ protected slots:
 	void cancelClicked();
 	
 	void startAudioRTP(QString remoteIP, int remoteAudioPort, int audioPayload, int dtmfPayload);
-	//void startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes);
-	void startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload);
+	void startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes);
+	//void startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload);
 	
 	void stopAudioRTP();
 	void stopVideoRTP();

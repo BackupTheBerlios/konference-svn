@@ -283,8 +283,8 @@ void KonferencePart::ProcessSipStateChange()
 			                           dtmfPayload, remoteVideoPort, videoPayload, videoCodec,
 			                           rxVideoResolution);
 			startAudioRTP(remoteIp, remoteAudioPort, audioPayload, dtmfPayload);
-			//startVideoRTP(remoteIp, remoteVideoPort, videoPayload, rxVideoResolution);
-			startVideoRTP(remoteIp, remoteVideoPort, videoPayload);
+			//startVideoRTP(remoteIp, remoteVideoPort, videoPayload);
+			startVideoRTP(remoteIp, remoteVideoPort, videoPayload, rxVideoResolution);
 			m_widget->setHowToDisplay(KonferenceVideoWidget::BOTH_BIG_REMOTE);
 			m_connectAction->setEnabled(false);
 			m_cancelAction->setEnabled(true);
@@ -318,10 +318,9 @@ void KonferencePart::stopAudioRTP()
 }
 
 //void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes)
-void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload)
+void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes)
 {
 	//some safe defaults
-	/*
 	int w = 176;
 	int h = 144;
 	if (rxVideoRes == "QCIF")
@@ -344,7 +343,7 @@ void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int vi
 		w = 704;
 		h = 576;
 	}
-	*/
+
 	//kdDebug() << "startVideoRTP: localport: " << KonferenceSettings::localVideoPort() << endl;
 	//old:
 	m_txWebcamClient = m_webcam->RegisterClient(PIX_FMT_YUV420P, 5, this);
@@ -356,8 +355,8 @@ void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int vi
 	m_rtpVideo = new rtpVideo (this, KonferenceSettings::localVideoPort(), remoteIP,
 	                           remoteVideoPort, videoPayload,RTP_TX_VIDEO, RTP_RX_VIDEO);
 	*/
-	h263->H263StartEncoder(176, 144, 5);
-	h263->H263StartDecoder(176, 144);
+	h263->H263StartEncoder(m_webcam->width(), m_webcam->height(), 5);
+	h263->H263StartDecoder(w, h);
 	m_rtpVideo = new rtpVideo ((QObject*)this, KonferenceSettings::localVideoPort(), remoteIP,
 								remoteVideoPort, videoPayload,RTP_TX_VIDEO, RTP_RX_VIDEO);
 }
