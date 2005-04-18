@@ -23,8 +23,8 @@
 #include <qobject.h>
 
 /**
-@author Malte Böhme
-*/
+ * @author Malte Böhme
+ */
 class audioBase : public QObject
 {
 	Q_OBJECT

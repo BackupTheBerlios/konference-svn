@@ -40,6 +40,9 @@
 #include "settings.h"
 #include "rtp/rtpvideo.h"
 #include "rtp/rtpaudio.h"
+#include "codecs/codecbase.h"
+#include "codecs/gsmcodec.h"
+#include "codecs/g711.h"
 #include "codecs/h263.h"
 #include "sip/sipfsm.h"
 
@@ -273,9 +276,26 @@ void KonferencePart::ProcessSipStateChange()
 
 void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int audioPayload, int dtmfPayload)
 {
+	//we do this here, so that we have more control over the audio-codec
+	// may be usefull for changing quality etc.
+	if (audioPayload == RTP_PAYLOAD_G711U)
+		m_audioCodec = new g711ulaw();
+	else if (audioPayload == RTP_PAYLOAD_G711A)
+		m_audioCodec = new g711alaw();
+	else if (audioPayload == RTP_PAYLOAD_GSM)
+		m_audioCodec = new gsmCodec();
+	else
+	{
+		kdDebug() << "Unknown audio payload " << audioPayload << endl;
+		audioPayload = RTP_PAYLOAD_G711U;
+		m_audioCodec = new g711ulaw();
+	}
+
 	m_rtpAudio = new rtp((QWidget*)this, KonferenceSettings::localAudioPort(), remoteIP,
 	                          remoteAudioPort, audioPayload, dtmfPayload,
-	                          KonferenceSettings::inputDevice(), KonferenceSettings::outputDevice());
+	                          KonferenceSettings::inputDevice(),
+							  KonferenceSettings::outputDevice(), m_audioCodec);
+
 kdDebug() << "dtmfpayload: " << dtmfPayload << endl;
 }
 

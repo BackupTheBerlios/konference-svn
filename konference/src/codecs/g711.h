@@ -19,6 +19,7 @@ public:
 	virtual int Encode(short *In, uchar *out, int Samples, short &maxPower, int gain);
 	virtual int Silence(uchar *out, int ms);
 	virtual QString getCodecName() { return "G711a"; };
+	virtual int getPayload(){ return 0x08; };
 private:
 };
 
@@ -31,6 +32,7 @@ public:
 	virtual int Encode(short *In, uchar *out, int Samples, short &maxPower, int gain);
 	virtual int Silence(uchar *out, int ms);
 	virtual QString getCodecName() { return "G711u"; };
+	virtual int getPayload(){ return 0x00; };
 private:
 };
 

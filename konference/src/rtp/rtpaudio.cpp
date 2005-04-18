@@ -24,7 +24,7 @@
 #include "../codecs/gsmcodec.h"
 
 
-rtp::rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, rtpTxMode txm, rtpRxMode rxm)
+rtp::rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, rtpTxMode txm, rtpRxMode rxm)
 {
 	eventWindow = callingApp;
 	yourIP.setAddress(remoteIP);
@@ -34,7 +34,7 @@ rtp::rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, i
 	rxMode = rxm;
 	micDevice = micDev;
 	spkDevice = spkDev;
-
+	m_codec = codec;
 
 	audioPayload = mediaPay;
 	dtmfPayload = dtmfPay;
@@ -126,8 +126,6 @@ void rtp::rtpAudioThreadWorker()
 	CloseSocket();
 	if (pJitter)
 		delete pJitter;
-	if (Codec)
-		delete Codec;
 	if (ToneToSpk != 0)
 		delete ToneToSpk;
 }
@@ -167,23 +165,8 @@ void rtp::rtpInitialise()
 	spkInBuffer = 0;
 
 	pJitter = new Jitter();
-	//pJitter->Debug();
 
-	if (audioPayload == RTP_PAYLOAD_G711U)
-		Codec = new g711ulaw();
-	else if (audioPayload == RTP_PAYLOAD_G711A)
-		Codec = new g711alaw();
-	else if (audioPayload == RTP_PAYLOAD_GSM)
-		Codec = new gsmCodec();
-	else
-	{
-		kdDebug() << "Unknown audio payload " << audioPayload << endl;
-		audioPayload = RTP_PAYLOAD_G711U;
-		Codec = new g711ulaw();
-	}
-
-	rtpMPT = audioPayload;
-
+	rtpMPT = m_codec->getPayload();
 	rtpMarker = 0;
 }
 
@@ -240,14 +223,6 @@ int rtp::OpenAudioDevice(QString devName, int mode)
 		return -1;
 	}
 
-	// Set Full Duplex operation
-	/*if (ioctl(fd, SNDCTL_DSP_SETDUPLEX, 0) == -1)
-	{
-	    kdDebug() << "Error setting audio driver duplex\n";
-	    close(fd);
-	    return -1;
-	}*/
-
 	int format = AFMT_S16_LE;//AFMT_MU_LAW;
 	if (ioctl(fd, SNDCTL_DSP_SETFMT, &format) == -1)
 	{
@@ -294,16 +269,7 @@ int rtp::OpenAudioDevice(QString devName, int mode)
 		fcntl(fd, F_SETFL, flags);
 	}
 
-	/*    audio_buf_info info;
-	    if ((ioctl(fd, SNDCTL_DSP_GETBLKSIZE, &frag_size) == -1) ||
-	        (ioctl(fd, SNDCTL_DSP_GETOSPACE, &info) == -1))
-	    {
-	        kdDebug() << "Error getting audio driver fragment info\n";
-	        close(fd);
-	        return -1;
-	    }*/
-	//kdDebug() << "Frag size " << frag_size << " Fragments " << info.fragments << " Ftotal " << info.fragstotal << endl;
-	return fd;
+return fd;
 }
 
 
@@ -322,12 +288,7 @@ void rtp::StopTxRx()
 }
 
 
-void rtp::Debug(QString dbg)
-{
-
-	kdDebug() << dbg;
-
-}
+void rtp::Debug(QString dbg){kdDebug() << dbg;}
 
 void rtp::OpenSocket()
 {
@@ -615,14 +576,14 @@ void rtp::PlayOutAudio()
 				mLen = JBuf->len - RTP_HEADER_SIZE;
 				if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER) && SpeakerOn)
 				{
-					PlayLen = Codec->Decode(JBuf->RtpData, SpkBuffer[spkInBuffer], mLen, spkPower2);
+					PlayLen = m_codec->Decode(JBuf->RtpData, SpkBuffer[spkInBuffer], mLen, spkPower2);
 					AddToneToAudio(SpkBuffer[spkInBuffer], PlayLen/sizeof(short));
 
 					m = write(speakerFd, (uchar *)SpkBuffer[spkInBuffer], PlayLen);
 				}
 				else if (rxMode == RTP_RX_AUDIO_TO_BUFFER)
 				{
-					PlayLen = Codec->Decode(JBuf->RtpData, SpkBuffer[spkInBuffer], mLen, spkPower2);
+					PlayLen = m_codec->Decode(JBuf->RtpData, SpkBuffer[spkInBuffer], mLen, spkPower2);
 					recordInPacket(SpkBuffer[spkInBuffer], PlayLen);
 				}
 				rxTimestamp += mLen;
@@ -773,7 +734,7 @@ void rtp::StreamOut(RTPPACKET &RTPpacket)
 
 void rtp::fillPacketwithSilence(RTPPACKET &RTPpacket)
 {
-	RTPpacket.len = Codec->Silence(RTPpacket.RtpData, txMsPacketSize);
+	RTPpacket.len = m_codec->Silence(RTPpacket.RtpData, txMsPacketSize);
 }
 
 bool rtp::fillPacketfromMic(RTPPACKET &RTPpacket)
@@ -791,7 +752,7 @@ bool rtp::fillPacketfromMic(RTPPACKET &RTPpacket)
 		else if (micMuted)
 			fillPacketwithSilence(RTPpacket);
 		else
-			RTPpacket.len = Codec->Encode(buffer, RTPpacket.RtpData, txPCMSamplesPerPacket, spkPower2, gain);
+			RTPpacket.len = m_codec->Encode(buffer, RTPpacket.RtpData, txPCMSamplesPerPacket, spkPower2, gain);
 	}
 	else
 		fillPacketwithSilence(RTPpacket);
@@ -809,7 +770,7 @@ void rtp::fillPacketfromBuffer(RTPPACKET &RTPpacket)
 	}
 	else
 	{
-		RTPpacket.len = Codec->Encode(txBuffer+txBufferPtr, RTPpacket.RtpData, txPCMSamplesPerPacket, spkPower2, 0);
+		RTPpacket.len = m_codec->Encode(txBuffer+txBufferPtr, RTPpacket.RtpData, txPCMSamplesPerPacket, spkPower2, 0);
 		txBufferPtr += txPCMSamplesPerPacket;
 		if (txBufferPtr >= txBufferLen)
 		{

@@ -27,30 +27,3 @@ codecBase::codecBase()
 codecBase::~codecBase()
 {
 }
-
-int codecBase::Encode(short *In, uchar *Out, int Samples, short &maxPower, int gain)
-{
-	(void)maxPower;
-	(void)gain;
-	memcpy(Out, (char *)In, Samples);
-	return Samples;
-}
-
-int codecBase::Decode(uchar *In, short *Out, int Len, short &maxPower)
-{
-	(void)maxPower;
-	memcpy((char *)Out, In, Len);
-	return Len;
-}
-
-int codecBase::Silence(uchar *out, int ms)
-{
-	int len = ms * PCM_SAMPLES_PER_MS;
-	memset(out, 0, len);
-	return len;
-}
-
-QString codecBase::getCodecName()
-{
-	return "NO-CODEC";
-}

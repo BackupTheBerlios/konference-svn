@@ -65,7 +65,7 @@ class rtp : public QThread
 {
 
 public:
-	rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, rtpTxMode txm=RTP_TX_AUDIO_FROM_MICROPHONE, rtpRxMode rxm=RTP_RX_AUDIO_TO_SPEAKER);
+	rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, rtpTxMode txm=RTP_TX_AUDIO_FROM_MICROPHONE, rtpRxMode rxm=RTP_RX_AUDIO_TO_SPEAKER);
 	~rtp();
 	virtual void run();
 
@@ -113,7 +113,7 @@ private:
 	QMutex rtpMutex;
 	QSocketDevice *rtpSocket;
 	QWaitCondition *eventCond;
-	codecBase   *Codec;
+	codecBase   *m_codec;
 	Jitter *pJitter;
 	int rxMsPacketSize;
 	int txMsPacketSize;

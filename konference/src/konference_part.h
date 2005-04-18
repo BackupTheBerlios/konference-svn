@@ -39,7 +39,7 @@ class H263Container;
 class wcClient;
 class SipContainer;
 class WebcamBase;
-
+class codecBase;
 
 /**
  * This is a "Part".  It that does all the real work in a KPart
@@ -132,6 +132,8 @@ private:
 	 */
 	WebcamBase *m_webcam;
 
+	codecBase *m_audioCodec;
+	
 	KHistoryCombo *m_location;
 
 	KAction *m_connectAction;

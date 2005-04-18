@@ -38,6 +38,7 @@ public:
 	virtual int Encode(short *In, uchar *out, int Samples, short &maxPower, int gain);
 	virtual int Silence(uchar *out, int ms);
 	virtual QString getCodecName() { return "GSM"; };
+	virtual int getPayload(){ return 0x03; };
 private:
 	gsm gsmEncData;
 	gsm gsmDecData;
