@@ -23,7 +23,7 @@
 #include <linux/sockios.h>
 #include "config.h"
 
-#include "rtp.h"
+#include "rtpaudio.h"
 #include "../codecs/g711.h"
 #include "../codecs/gsmcodec.h"
 

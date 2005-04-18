@@ -3,5 +3,6 @@ INCLUDES = -I$(top_srcdir)/src/dialogs -I$(top_srcdir)/src/dialogs/config \
 METASOURCES = AUTO
 librtp_la_LDFLAGS = $(all_libraries)
 noinst_LTLIBRARIES = librtp.la
-noinst_HEADERS = rtpevent.h jitter.h rtplistener.h rtp.h
-librtp_la_SOURCES = jitter.cpp rtplistener.cpp rtpbase.cpp rtpvideo.cpp rtp.cpp
+noinst_HEADERS = rtpevent.h jitter.h rtplistener.h
+librtp_la_SOURCES = jitter.cpp rtplistener.cpp rtpbase.cpp rtpvideo.cpp \
+	rtpaudio.cpp
