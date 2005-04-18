@@ -39,7 +39,7 @@
 #include "configdialog.h"
 #include "settings.h"
 #include "rtp/rtpvideo.h"
-#include "rtp/rtp.h"
+#include "rtp/rtpaudio.h"
 #include "codecs/h263.h"
 #include "sip/sipfsm.h"
 
@@ -276,6 +276,7 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 	m_rtpAudio = new rtp((QWidget*)this, KonferenceSettings::localAudioPort(), remoteIP,
 	                          remoteAudioPort, audioPayload, dtmfPayload,
 	                          KonferenceSettings::inputDevice(), KonferenceSettings::outputDevice());
+kdDebug() << "dtmfpayload: " << dtmfPayload << endl;
 }
 
 void KonferencePart::stopAudioRTP()
@@ -337,6 +338,7 @@ void KonferencePart::ProcessRxVideoFrame()
 
 	//kdDebug() << "KonferencePart::ProcessRxVideoFrame()" << endl;
 
+	//TODO always true, isnt it?
 	if (m_rtpVideo && (v = m_rtpVideo->getRxedVideo()))
 	{
 		//kdDebug() << "rtpVideo && (v = rtpVideo->getRxedVideo())" << endl;

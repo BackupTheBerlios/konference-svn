@@ -28,8 +28,8 @@
 class oss
 {
 public:
-    oss();
-    ~oss();
+	oss();
+	~oss();
 	void setDeviceName(QString name){m_devName = name;};
 	bool openDevice();
 	bool closeDevice();
@@ -45,9 +45,9 @@ public:
 	bool isMicrophoneData();
 private:
 	Jitter *m_jitter;
-bool spkSeenData;
-int spkLowThreshold;
-int spkUnderrunCount;
+	bool spkSeenData;
+	int spkLowThreshold;
+	int spkUnderrunCount;
 	int rxPCMSamplesPerPacket, txPCMSamplesPerPacket;
 
 	QString m_devName;
