@@ -21,7 +21,6 @@
 #include <netinet/in.h>
 
 #include "rtpvideo.h"
-#include "rtplistener.h"
 
 
 rtpVideo::rtpVideo(QObject *parent, int localPort, QString remoteIP, int remotePort, int mediaPay, rtpTxMode txm, rtpRxMode rxm)
@@ -41,7 +40,6 @@ rtpVideo::rtpVideo(QObject *parent, int localPort, QString remoteIP, int remoteP
 		FreeVideoBufferQ.append(new VIDEOBUFFER);
 
 	videoToTx = 0;
-	eventCond = 0;
 	pJitter = new Jitter();
 	killRtpThread = false;
 	start();
@@ -51,8 +49,6 @@ rtpVideo::rtpVideo(QObject *parent, int localPort, QString remoteIP, int remoteP
 rtpVideo::~rtpVideo()
 {
 	killRtpThread = true;
-	if (eventCond)
-		eventCond->wakeAll();
 	wait();
 	destroyVideoBuffers();
 }
@@ -98,8 +94,8 @@ bool rtpVideo::queueVideo(VIDEOBUFFER *vb)
 	if (videoToTx==0)
 	{
 		videoToTx=vb;
-		if (eventCond)
-			eventCond->wakeAll();
+//		if (eventCond)
+//			eventCond->wakeAll();
 		res=true;
 	}
 	rtpMutex.unlock();
@@ -184,24 +180,25 @@ void rtpVideo::run()
 {
 	initialise();
 	openSocket();
-	eventCond = new QWaitCondition();
-	rtpListener *videoListener = new rtpListener(rtpSocket, eventCond);
-
+	
 	while(!killRtpThread)
 	{
 		// wait for the rtpSocket to have some data
-		eventCond->wait();
-
+		//eventCond->wait();
+		
 		if (killRtpThread)
 			break;
-
-		StreamInVideo();
+		
+		//TODO dirty hack...
+		if(rtpSocket->bytesAvailable() > 40)
+		{
+			StreamInVideo();
+		}
+		
 		transmitQueuedVideo();
+		msleep(20);
 	}
 
-	delete videoListener;
-	delete eventCond;
-	eventCond = 0;
 
 	if (videoToTx)
 	{

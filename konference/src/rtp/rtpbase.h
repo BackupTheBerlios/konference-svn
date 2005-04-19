@@ -81,7 +81,6 @@ protected:
 	int m_remotePort;
 
 	QMutex rtpMutex;
-	QWaitCondition *eventCond;
 QSocketDevice *rtpSocket;
 private:
 	//QSocketDevice *rtpSocket;

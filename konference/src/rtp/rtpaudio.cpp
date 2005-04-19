@@ -47,7 +47,6 @@ rtp::rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, i
 	recBuffer = 0;
 	dtmfIn = "";
 	dtmfOut = "";
-	eventCond = 0;
 
 	killRtpThread = false;
 	start();
@@ -58,8 +57,6 @@ rtp::~rtp()
 	killRtpThread = true;
 	SpeakerOn = false;
 	MicrophoneOn = false;
-	if (eventCond)
-		eventCond->wakeAll();
 	wait();
 }
 
