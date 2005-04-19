@@ -75,15 +75,14 @@ private:
 	bool setupAudio();
 	void StreamInAudio();
 	void PlayOutAudio();
-	void recordInPacket(short *data, int dataBytes);
+	//void recordInPacket(short *data, int dataBytes);
 	void HandleRxDTMF(RTPPACKET *RTPpacket);
 	void SendWaitingDtmf();
 	void StreamOut(RTPPACKET &RTPpacket);
 	void fillPacketwithSilence(RTPPACKET &RTPpacket);
 	bool fillPacketfromMic(RTPPACKET &RTPpacket);
 	void fillPacketfromBuffer(RTPPACKET &RTPpacket);
-	void AddToneToAudio(short *buffer, int Samples);
-
+	
 
 	short		SpkBuffer[1][SPK_BUFFER_SIZE];
 	int			spkInBuffer;
@@ -96,8 +95,10 @@ private:
 	int rxPCMSamplesPerPacket;
 	int txPCMSamplesPerPacket;
 	int SpkJitter;
-	bool SpeakerOn;
-	bool MicrophoneOn;
+	
+	QString micDevice;
+	QString spkDevice;
+	
 	ulong rxTimestamp;
 	ushort rxSeqNum;
 	bool rxFirstFrame;
@@ -111,31 +112,23 @@ private:
 	uchar rtpMarker;
 	rtpTxMode txMode;
 	rtpRxMode rxMode;
-	QString micDevice;
-	QString spkDevice;
+	
 	bool oobError;
 	bool killRtpThread;
 	short *txBuffer;
 	int txBufferLen, txBufferPtr;
 	ulong lastDtmfTimestamp;
 	QString dtmfIn;
-	QString dtmfOut;
 	short *recBuffer;
 	int recBufferLen, recBufferMaxLen;
-	int audioPayload;
-	int dtmfPayload;
+	
+	///this may be set to 'true' anytime to transmit silence instead of mic-data (speech)
 	bool micMuted;
 
-	short *ToneToSpk;
-	int ToneToSpkSamples;
-	int ToneToSpkPlayed;
-
+	int audioPayload,dtmfPayload;
 	//this is used by the encode/decode functions of the codecs and stores the power-lvl in this frame
 	//used for statistics/powermeter
 	short spkPower2;
-
-
-	//	audioOSS *m_audioDevice;
 };
 
 

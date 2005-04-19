@@ -46,7 +46,6 @@ rtpAudio::rtpAudio(QWidget *callingApp, int localPort, QString remoteIP, int rem
 	txBuffer = 0;
 	recBuffer = 0;
 	dtmfIn = "";
-	dtmfOut = "";
 
 	killRtpThread = false;
 	start();
@@ -55,8 +54,6 @@ rtpAudio::rtpAudio(QWidget *callingApp, int localPort, QString remoteIP, int rem
 rtpAudio::~rtpAudio()
 {
 	killRtpThread = true;
-	SpeakerOn = false;
-	MicrophoneOn = false;
 	wait();
 }
 
@@ -84,11 +81,9 @@ void rtpAudio::rtpAudioThreadWorker()
 	rxTimestamp = 0;
 	rxSeqNum = 0;
 	rxFirstFrame = true;
-	SpeakerOn = true;
 
 	txSequenceNumber = 1;
 	txTimeStamp	= 0;
-	MicrophoneOn = true;
 
 	setupAudio();
 
@@ -108,7 +103,6 @@ void rtpAudio::rtpAudioThreadWorker()
 		// Write audio to the speaker, but keep in dejitter buffer as long as possible
 		while (isSpeakerHungry() &&
 		        pJitter->AnyData() &&
-		        SpeakerOn &&
 		        rxMode == RTP_RX_AUDIO_TO_SPEAKER &&
 		        pJitter->isPacketQueued(rxSeqNum))
 		{
@@ -139,17 +133,16 @@ void rtpAudio::rtpAudioThreadWorker()
 			StreamOut(RTPpacket);
 		}
 
-		SendWaitingDtmf();
+		//here my be a good place to send dtmf-tones...
+		//SendWaitingDtmf();
 	}
 
-	SpeakerOn = false;
-	MicrophoneOn = false;
 	closeDevice();
 	closeSocket();
 	if (pJitter)
 		delete pJitter;
-	if (ToneToSpk != 0)
-		delete ToneToSpk;
+	//	if (ToneToSpk != 0)
+	//		delete ToneToSpk;
 }
 
 void rtpAudio::rtpInitialise()
@@ -159,8 +152,6 @@ void rtpAudio::rtpInitialise()
 	txMsPacketSize        = 20;
 	txPCMSamplesPerPacket = txMsPacketSize*PCM_SAMPLES_PER_MS;
 	SpkJitter             = 5; // Size of the jitter buffer * (rxMsPacketSize/2); so 5=50ms for 20ms packet size
-	SpeakerOn             = false;
-	MicrophoneOn          = false;
 	speakerFd             = -1;
 	microphoneFd          = -1;
 	txSequenceNumber      = 1; //udp packet sequence number
@@ -168,7 +159,6 @@ void rtpAudio::rtpInitialise()
 	txBuffer              = 0;
 	lastDtmfTimestamp     = 0;
 	dtmfIn                = "";
-	dtmfOut               = "";
 	recBuffer             = 0;
 	recBufferLen          = 0;
 	recBufferMaxLen       = 0;
@@ -179,9 +169,9 @@ void rtpAudio::rtpInitialise()
 	oobError              = false;
 	micMuted              = false;
 
-	ToneToSpk = 0;
-	ToneToSpkSamples = 0;
-	ToneToSpkPlayed = 0;
+	//ToneToSpk = 0;
+	//ToneToSpkSamples = 0;
+	//ToneToSpkPlayed = 0;
 
 	spkInBuffer = 0;
 
@@ -214,12 +204,12 @@ bool rtpAudio::setupAudio()
 
 	if (speakerFd  == -1)
 	{
-		kdDebug() << "Cannot open device " << spkDevice << endl;
+		kdDebug() << "Cannot open spk device " << spkDevice << endl;
 		return false;
 	}
 	if (microphoneFd  == -1)
 	{
-		kdDebug() << "Cannot open device " << micDevice << endl;
+		kdDebug() << "Cannot open mic device " << micDevice << endl;
 		return false;
 	}
 
@@ -227,23 +217,6 @@ bool rtpAudio::setupAudio()
 		return setupAudioDevice(speakerFd);
 	else
 		return (setupAudioDevice(speakerFd) && setupAudioDevice(microphoneFd));
-}
-
-void rtpAudio::AddToneToAudio(short *buffer, int Samples)
-{
-	if (ToneToSpk != 0)
-	{
-		int s = QMIN(Samples, ToneToSpkSamples);
-		for (int c=0; c<s; c++)
-			buffer[c] += ToneToSpk[ToneToSpkPlayed+c];
-		ToneToSpkPlayed += s;
-		ToneToSpkSamples -= s;
-		if (ToneToSpkSamples == 0)
-		{
-			delete ToneToSpk;
-			ToneToSpk = 0;
-		}
-	}
 }
 
 void rtpAudio::StreamInAudio()
@@ -347,19 +320,19 @@ void rtpAudio::PlayOutAudio()
 			case JB_REASON_OK:
 				++rxSeqNum;
 				mLen = JBuf->len - RTP_HEADER_SIZE;
-				if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER) && SpeakerOn)
+				if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER))
 				{
 					PlayLen = m_codec->Decode(JBuf->RtpData, SpkBuffer[spkInBuffer], mLen, spkPower2);
-					AddToneToAudio(SpkBuffer[spkInBuffer], PlayLen/sizeof(short));
-
 					m = write(speakerFd, (uchar *)SpkBuffer[spkInBuffer], PlayLen);
 				}
-				else if (rxMode == RTP_RX_AUDIO_TO_BUFFER)
-				{
-					PlayLen = m_codec->Decode(JBuf->RtpData, SpkBuffer[spkInBuffer], mLen, spkPower2);
-					recordInPacket(SpkBuffer[spkInBuffer], PlayLen);
-				}
-				rxTimestamp += mLen;
+				//TODO why the heck should we want to put received frames in a buffer
+				//TODO and do nothing with them??
+				//else if (rxMode == RTP_RX_AUDIO_TO_BUFFER)
+				//{
+				//	PlayLen = m_codec->Decode(JBuf->RtpData, SpkBuffer[spkInBuffer], mLen, spkPower2);
+				//	recordInPacket(SpkBuffer[spkInBuffer], PlayLen);
+				//}
+				rxTimestamp += mLen;//TODO increasing the timestamp by a length of data??
 				pJitter->FreeJBuffer(JBuf);
 				break;
 
@@ -375,26 +348,28 @@ void rtpAudio::PlayOutAudio()
 				tryAgain = true;
 				break;
 
-			case JB_REASON_MISSING: // This may just be because we are putting frames into the driver too early, but no way to tell
+			// This may just be because we are putting frames into the driver too early, but no way to tell
+			case JB_REASON_MISSING: 
 				rxSeqNum++;
 				memset(SilenceBuffer, 0, sizeof(SilenceBuffer));
 				SilenceLen = rxPCMSamplesPerPacket * sizeof(short);
-				if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER) && SpeakerOn)
+				if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER))
 				{
-					AddToneToAudio(SilenceBuffer, SilenceLen/sizeof(short));
 					m = write(speakerFd, (uchar *)SilenceBuffer, SilenceLen);
 				}
-				else if (rxMode == RTP_RX_AUDIO_TO_BUFFER)
-				{
-					recordInPacket(SilenceBuffer, SilenceLen);
-				}
+				//TODO see above
+				//else if (rxMode == RTP_RX_AUDIO_TO_BUFFER)
+				//{
+				//	
+				//	recordInPacket(SilenceBuffer, SilenceLen);
+				//}
 				break;
 
 			case JB_REASON_EMPTY: // nothing to do, just hope the driver playout buffer is full (since we can't tell!)
 				break;
 			case JB_REASON_SEQERR:
 			default:
-				//                kdDebug() << "Something funny happened with the seq numbers, should reset them & start again\n";
+				//kdDebug() << "Something funny happened with the seq numbers, should reset them & start again\n";
 				break;
 			}
 		}
@@ -402,6 +377,7 @@ void rtpAudio::PlayOutAudio()
 	}
 }
 
+/*
 void rtpAudio::recordInPacket(short *data, int dataBytes)
 {
 	rtpMutex.lock();
@@ -422,7 +398,7 @@ void rtpAudio::recordInPacket(short *data, int dataBytes)
 		rxMode = RTP_RX_AUDIO_DISCARD;
 	rtpMutex.unlock();
 }
-
+*/
 void rtpAudio::HandleRxDTMF(RTPPACKET *RTPpacket)
 {
 	DTMF_RFC2833 *dtmf = (DTMF_RFC2833 *)RTPpacket->RtpData;
@@ -440,60 +416,21 @@ void rtpAudio::HandleRxDTMF(RTPPACKET *RTPpacket)
 	}
 }
 
-void rtpAudio::SendWaitingDtmf()
-{
-	if ((dtmfPayload != -1) && (rtpSocket))
-	{
-		QChar digit = ' ';
-		rtpMutex.lock();
-		if (dtmfOut.length() > 0)
-		{
-			digit = dtmfOut[0];
-			dtmfOut.remove(0,1);
-		}
-		rtpMutex.unlock();
-
-		if (digit != ' ')
-		{
-			//kdDebug() << "Sending DTMF digit " << digit << endl;
-			RTPPACKET dtmfPacket;
-			DTMF_RFC2833 *dtmf = (DTMF_RFC2833 *)(dtmfPacket.RtpData);
-
-			dtmf->dtmfDigit = CHAR2DTMF(digit);
-			dtmf->dtmfERVolume = 0x0A | RTP_DTMF_EBIT; // Volume=10; E-bit set indicating end of event
-			dtmf->dtmfDuration = htons(0x0500); // Duration = 16ms
-
-			txSequenceNumber += 1; // Increment seq-num; don't increment timestamp
-			dtmfPacket.RtpVPXCC = 128;
-			dtmfPacket.RtpMPT = dtmfPayload | RTP_PAYLOAD_MARKER_BIT; // Set for 1st tx of a digit, clear for retransmissions
-			dtmfPacket.RtpSequenceNumber = htons(txSequenceNumber);
-			dtmfPacket.RtpTimeStamp = htonl(txTimeStamp);
-			dtmfPacket.RtpSourceID = 0x666;
-
-			rtpSocket->writeBlock((char *)&dtmfPacket.RtpVPXCC, RTP_HEADER_SIZE+sizeof(DTMF_RFC2833), m_remoteIP, m_remotePort);
-		}
-	}
-}
-
 void rtpAudio::StreamOut(RTPPACKET &RTPpacket)
 {
-	if (rtpSocket)
-	{
-		txSequenceNumber += 1;
-		txTimeStamp += txPCMSamplesPerPacket;
+	txSequenceNumber += 1;
+	txTimeStamp += txPCMSamplesPerPacket;
 
-		RTPpacket.RtpVPXCC = 128;
-		RTPpacket.RtpMPT = rtpMPT | rtpMarker;
-		rtpMarker = 0;
-		RTPpacket.RtpSequenceNumber = htons(txSequenceNumber);
-		RTPpacket.RtpTimeStamp = htonl(txTimeStamp);
-		// as long as we are only doing one stream any hard
-		// coded value will do, they must be unique for each stream
-		RTPpacket.RtpSourceID = 0x666;
+	RTPpacket.RtpVPXCC = 128;
+	RTPpacket.RtpMPT = rtpMPT | rtpMarker;
+	rtpMarker = 0;
+	RTPpacket.RtpSequenceNumber = htons(txSequenceNumber);
+	RTPpacket.RtpTimeStamp = htonl(txTimeStamp);
+	// as long as we are only doing one stream any hard
+	// coded value will do, they must be unique for each stream
+	RTPpacket.RtpSourceID = 0x666;
 
-		//rtpSocket->writeBlock((char *)&RTPpacket.RtpVPXCC, RTPpacket.len+RTP_HEADER_SIZE, m_remoteIP, m_remotePort);
-		sendPacket((char *)&RTPpacket.RtpVPXCC, RTPpacket.len+RTP_HEADER_SIZE);
-	}
+	sendPacket((char *)&RTPpacket.RtpVPXCC, RTPpacket.len+RTP_HEADER_SIZE);
 }
 
 void rtpAudio::fillPacketwithSilence(RTPPACKET &RTPpacket)
@@ -504,22 +441,18 @@ void rtpAudio::fillPacketwithSilence(RTPPACKET &RTPpacket)
 bool rtpAudio::fillPacketfromMic(RTPPACKET &RTPpacket)
 {
 	int gain=0;
-	if (MicrophoneOn)
-	{
-		short buffer[MAX_DECOMP_AUDIO_SAMPLES];
-		int len = read(microphoneFd, (char *)buffer, txPCMSamplesPerPacket*sizeof(short));
+	short buffer[MAX_DECOMP_AUDIO_SAMPLES];
+	int len = read(microphoneFd, (char *)buffer, txPCMSamplesPerPacket*sizeof(short));
 
-		if (len != (int)(txPCMSamplesPerPacket*sizeof(short)))
-		{
-			fillPacketwithSilence(RTPpacket);
-		}
-		else if (micMuted)
-			fillPacketwithSilence(RTPpacket);
-		else
-			RTPpacket.len = m_codec->Encode(buffer, RTPpacket.RtpData, txPCMSamplesPerPacket, spkPower2, gain);
-	}
-	else
+	if (len != (int)(txPCMSamplesPerPacket*sizeof(short)))
+	{
 		fillPacketwithSilence(RTPpacket);
+	}
+	else if (micMuted)
+		fillPacketwithSilence(RTPpacket);
+	else
+		RTPpacket.len = m_codec->Encode(buffer, RTPpacket.RtpData, txPCMSamplesPerPacket, spkPower2, gain);
+
 	return true;
 }
 
