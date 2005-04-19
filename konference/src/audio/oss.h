@@ -31,46 +31,22 @@ class audioOSS
 public:
 	audioOSS();
 	~audioOSS();
-	int OpenAudioDevice(QString devName, int mode);
 	bool setupAudioDevice(int fd);
 	/**
 	 * closes the device(s) opened in @ref #OpenAudioDevice()
 	 */
 	void closeDevice();
-	
-	int getBuffer(char *buffer);
+
 	bool isMicrophoneData();
-	//void setDeviceName(QString name){m_devName = name;};
-	/*
-	bool openDevice(QString spkDevice, QString micDevice, QString);
-	void closeDevice();
-	int writeBuffer(uchar *buffer, int len);
-	Jitter *getJitterBuffer(){return m_jitter;};
-	*/
-	/**
-	 * Reads data from mic into buffer.
-	 * @returns length
-	 */
-	/*
-	int readBuffer(short *buffer);
-	bool isOpen(){return m_isOpen;};
-	bool isSpeakerHungry(int rxSeqNum);
-	bool isMicrophoneData();
-	*/
+	bool isSpeakerHungry();
+
 protected:
 	int speakerFd;
 	int microphoneFd;
-private:
-	/*Jitter *m_jitter;
-	bool spkSeenData;
+bool spkSeenData;
 	int spkLowThreshold;
 	int spkUnderrunCount;
-	int rxPCMSamplesPerPacket, txPCMSamplesPerPacket;
-
-	QString m_devName;
-	bool m_isOpen;
-	int m_fd;
-	*/
+	
 };
 
 #endif

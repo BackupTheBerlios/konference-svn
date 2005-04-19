@@ -107,9 +107,14 @@ void rtp::rtpAudioThreadWorker()
 		StreamInAudio();
 
 		// Write audio to the speaker, but keep in dejitter buffer as long as possible
-		while (isSpeakerHungry() && pJitter->AnyData())
+		while (isSpeakerHungry() &&
+		pJitter->AnyData() &&
+		SpeakerOn &&
+		rxMode == RTP_RX_AUDIO_TO_SPEAKER &&
+		pJitter->isPacketQueued(rxSeqNum))
+		{
 			PlayOutAudio();
-
+		}
 		// For mic. data, the microphone determines the transmit rate
 		// Mic. needs kicked the first time through
 		while ((txMode == RTP_TX_AUDIO_FROM_MICROPHONE) &&
@@ -140,7 +145,7 @@ void rtp::rtpAudioThreadWorker()
 
 	SpeakerOn = false;
 	MicrophoneOn = false;
-	closeAudioDevice();
+	closeDevice();
 	CloseSocket();
 	if (pJitter)
 		delete pJitter;
@@ -220,18 +225,6 @@ bool rtp::setupAudio()
 		return (setupAudioDevice(speakerFd) && setupAudioDevice(microphoneFd));
 }
 
-void rtp::closeAudioDevice()
-{
-	if (speakerFd > 0)
-		close(speakerFd);
-	if ((microphoneFd != speakerFd) && (microphoneFd > 0))
-		close(microphoneFd);
-
-	speakerFd = -1;
-	microphoneFd = -1;
-}
-
-
 void rtp::Debug(QString dbg){kdDebug() << dbg;}
 
 void rtp::OpenSocket()
@@ -272,67 +265,6 @@ void rtp::CloseSocket()
 	}
 }
 
-bool rtp::isSpeakerHungry()
-{
-	if (!SpeakerOn)
-		return false;
-
-	if (rxMode == RTP_RX_AUDIO_TO_SPEAKER)
-	{
-		int bytesQueued;
-		audio_buf_info info;
-		ioctl(speakerFd, SNDCTL_DSP_GETODELAY, &bytesQueued);
-		ioctl(speakerFd, SNDCTL_DSP_GETOSPACE, &info);
-
-		if (bytesQueued > 0)
-			spkSeenData = true;
-
-		// Never return true if it will result in the speaker blocking
-		if (info.bytes <= (int)(rxPCMSamplesPerPacket*sizeof(short)))
-			return false;
-
-		// Always push packets from the jitter buffer into the Speaker buffer
-		// if the correct packet is available
-		if (pJitter->isPacketQueued(rxSeqNum))
-			return true;
-
-		// Right packet not waiting for us - keep waiting unless the Speaker is going to
-		// underrun, in which case we will have to abandon the late/lost packet
-		if (bytesQueued > spkLowThreshold)
-			return false;
-
-		// Ok; so right packet is not sat waiting, and Speaker is hungry.  If the speaker has ran down to
-		// zero, i.e. underrun, flag this condition. Check for false alerts.
-		// Only look for underruns if ... speaker has no data left to play, but has been receiving data,
-		// and there IS data queued in the jitter buffer
-		if ((bytesQueued == 0) && spkSeenData && pJitter->AnyData() && (++spkUnderrunCount > 3))
-		{
-			spkUnderrunCount = 0;
-			// Increase speaker driver buffer since we are not servicing it
-			// fast enough, up to an arbitary limit
-			if (spkLowThreshold < (int)(6*(rxPCMSamplesPerPacket*sizeof(short))))
-				spkLowThreshold += (rxPCMSamplesPerPacket*sizeof(short));
-			//            kdDebug() << "Excessive speaker underrun, adjusting spk buffer to " << spkLowThreshold << endl;
-			//pJitter->Debug();
-		}
-
-	}
-
-	// Note - when receiving audio to a buffer; this will effectively
-	// remove all jitter buffers by always looking hungry for rxed
-	// packets. Ideally we should run off a clock instead
-	return true;
-}
-
-bool rtp::isMicrophoneData()
-{
-	audio_buf_info info;
-	ioctl(microphoneFd, SNDCTL_DSP_GETISPACE, &info);
-	if (info.bytes > (int)(txPCMSamplesPerPacket*sizeof(short)))
-		return true;
-
-	return false;
-}
 
 void rtp::PlayToneToSpeaker(short *tone, int Samples)
 {

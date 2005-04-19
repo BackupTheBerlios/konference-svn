@@ -87,13 +87,10 @@ private:
 	void rtpAudioThreadWorker();
 	void rtpInitialise();
 	bool setupAudio();
-	void closeAudioDevice();
 	void OpenSocket();
 	void CloseSocket();
 	void StreamInAudio();
 	void PlayOutAudio();
-	bool isSpeakerHungry();
-	bool isMicrophoneData();
 	void recordInPacket(short *data, int dataBytes);
 	void HandleRxDTMF(RTPPACKET *RTPpacket);
 	void SendWaitingDtmf();
@@ -128,8 +125,6 @@ private:
 	ushort txSequenceNumber;
 	ulong txTimeStamp;
 	int PlayoutDelay;
-	int speakerFd;
-	int microphoneFd;
 	short SilenceBuffer[MAX_DECOMP_AUDIO_SAMPLES];
 	int PlayLen;
 	int SilenceLen;
@@ -152,9 +147,6 @@ private:
 	int recBufferLen, recBufferMaxLen;
 	int audioPayload;
 	int dtmfPayload;
-	int spkLowThreshold;
-	bool spkSeenData;
-	int spkUnderrunCount;
 	bool micMuted;
 
 	short *ToneToSpk;
