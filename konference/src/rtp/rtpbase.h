@@ -67,14 +67,14 @@ enum rtpRxMode
 class rtpBase
 {
 public:
-	rtpBase();
+	rtpBase(QString remoteIP, int m_localPort, int m_remotePort);
 
 	virtual ~rtpBase();
 
 protected:
 	void openSocket();
 	void closeSocket();
-	void sendPacket(char *rtpData, int length);
+	void sendPacket(RTPPACKET &RTPpacket);
 	void readPacket(char *rtpData, int length);
 	QHostAddress m_remoteIP;
 	int m_localPort;

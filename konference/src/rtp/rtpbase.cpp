@@ -25,16 +25,20 @@
 
 #include "rtpbase.h"
 
-rtpBase::rtpBase()
+rtpBase::rtpBase(QString remoteIP, int localPort, int remotePort)
 {
 	rtpSocket = 0;
+	m_remoteIP.setAddress(remoteIP);
+	m_localPort = localPort;
+	m_remotePort = remotePort;
+	
 }
 
 rtpBase::~rtpBase(){}
 
-void rtpBase::sendPacket(char *rtpData, int length)
+void rtpBase::sendPacket(RTPPACKET &RTPpacket)
 {
-	rtpSocket->writeBlock(rtpData, length, m_remoteIP, m_remotePort);
+	rtpSocket->writeBlock((char *)&RTPpacket.RtpVPXCC, RTPpacket.len + RTP_HEADER_SIZE, m_remoteIP, m_remotePort);
 }
 
 void rtpBase::readPacket(char *rtpData, int length)

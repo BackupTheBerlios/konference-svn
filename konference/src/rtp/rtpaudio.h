@@ -75,10 +75,9 @@ private:
 	bool setupAudio();
 	void StreamInAudio();
 	void PlayOutAudio();
-	//void recordInPacket(short *data, int dataBytes);
 	void HandleRxDTMF(RTPPACKET *RTPpacket);
 	void SendWaitingDtmf();
-	void StreamOut(RTPPACKET &RTPpacket);
+	void initPacket(RTPPACKET &RTPpacket);
 	void fillPacketwithSilence(RTPPACKET &RTPpacket);
 	bool fillPacketfromMic(RTPPACKET &RTPpacket);
 	void fillPacketfromBuffer(RTPPACKET &RTPpacket);

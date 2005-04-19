@@ -24,12 +24,9 @@
 
 
 rtpVideo::rtpVideo(QObject *parent, int localPort, QString remoteIP, int remotePort, int mediaPay, rtpTxMode txm, rtpRxMode rxm)
-		: rtpBase()
+		: rtpBase(remoteIP, localPort, remotePort)
 {
 	m_parent = parent;
-	m_remoteIP.setAddress(remoteIP);
-	m_localPort = localPort;
-	m_remotePort = remotePort;
 	txMode = txm;
 	rxMode = rxm;
 
@@ -143,14 +140,16 @@ void rtpVideo::transmitQueuedVideo()
 			if (pkLen > H263SPACE)
 				pkLen = H263SPACE;
 
+			videoPacket.len = pkLen+sizeof(H263_RFC2190_HDR);
 			memcpy(videoPacket.RtpData+sizeof(H263_RFC2190_HDR), v, pkLen);
 			v += pkLen;
 			queuedLen -= pkLen;
 
+			//we have reached the last packet for this frame, so mark it
 			if (queuedLen == 0)
 				videoPacket.RtpMPT |= RTP_PAYLOAD_MARKER_BIT;  // Last packet has Marker bit set as per RFC 2190
 
-				sendPacket((char *)&videoPacket.RtpVPXCC, RTP_HEADER_SIZE+sizeof(H263_RFC2190_HDR)+pkLen);
+			sendPacket(videoPacket);
 			
 		}
 		freeVideoBuffer(queuedVideo);
@@ -337,7 +336,7 @@ void rtpVideo::StreamInVideo()
 				// Check rxed frame was not too big
 				if (pictureIndex > (int)sizeof(picture->video))
 				{
-					kdDebug() << "SIP: Received video frame size " << pictureIndex << "; too big for buffer" << endl;
+					kdDebug() << "Received video frame size " << pictureIndex << "; too big for buffer" << endl;
 					freeVideoBuffer(picture);
 					picture = 0;
 				}

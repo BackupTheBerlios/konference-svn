@@ -441,9 +441,6 @@ void SipThread::ChangePrimaryCallState(SipFsm *sipFsm, int NewState)
 {
 	int OldState = CallState;
 	CallState = NewState;
-	//if ((CallState == SIP_CONNECTED) && (vxmlCallActive))
-	//	sipContainer->notifyCallState(SIP_CONNECTED_VXML);
-	//else
 	sipContainer->notifyCallState(CallState);
 
 	if (OldState != CallState)
@@ -498,15 +495,6 @@ void SipThread::ChangePrimaryCallState(SipFsm *sipFsm, int NewState)
 			}
 			EventQLock.unlock();
 
-			/*
-			if (vxmlCallActive)
-			{
-				int lPort = atoi((const char *)gContext->GetSetting("AudioLocalPort"));
-				QString spk = gContext->GetSetting("AudioOutputDevice");
-				Rtp = new rtp(0, lPort, remoteIp, remoteAudioPort, audioPayload, dtmfPayload, "None", spk, RTP_TX_AUDIO_SILENCE, RTP_RX_AUDIO_DISCARD);
-				vxml = new vxmlParser(Rtp, callerName);
-			}
-			*/
 		}
 
 		if ((CallState == SIP_ICONNECTING) && (FrontEndActive == false))
@@ -517,20 +505,6 @@ void SipThread::ChangePrimaryCallState(SipFsm *sipFsm, int NewState)
 			notify->Display(callerName, callerUrl);
 			delete notify;
 		}
-
-		// A call answered by VXML has been disconnected
-		/*
-		if ((OldState == SIP_CONNECTED) && vxmlCallActive)
-		{
-			vxmlCallActive = false;
-			if (vxml != 0)
-				delete vxml;
-			vxml = 0;
-			if (Rtp != 0)
-				delete Rtp;
-			Rtp = 0;
-		}
-		*/
 	}
 }
 

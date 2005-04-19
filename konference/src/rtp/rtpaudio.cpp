@@ -25,13 +25,10 @@
 
 
 rtpAudio::rtpAudio(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, rtpTxMode txm, rtpRxMode rxm)
-		: rtpBase()
+		: rtpBase(remoteIP, localPort, remotePort)
 {
 	eventWindow = callingApp;
-	m_remoteIP.setAddress(remoteIP);
-	m_localPort = localPort;
-	m_remotePort = remotePort;
-
+	
 	txMode = txm;
 	rxMode = rxm;
 	micDevice = micDev;
@@ -115,7 +112,12 @@ void rtpAudio::rtpAudioThreadWorker()
 		{
 			micFirstTime = false;
 			if (fillPacketfromMic(RTPpacket))
-				StreamOut(RTPpacket);
+			{
+				txSequenceNumber += 1;
+				txTimeStamp += txPCMSamplesPerPacket;
+				initPacket(RTPpacket);
+				sendPacket(RTPpacket);
+			}
 		}
 
 		// For transmitting silence/buffered data we need to use the clock
@@ -130,7 +132,10 @@ void rtpAudio::rtpAudioThreadWorker()
 			case RTP_TX_AUDIO_SILENCE:           fillPacketwithSilence(RTPpacket); break;
 			case RTP_TX_AUDIO_FROM_BUFFER:       fillPacketfromBuffer(RTPpacket);  break;
 			}
-			StreamOut(RTPpacket);
+			txSequenceNumber += 1;
+			txTimeStamp += txPCMSamplesPerPacket;
+			initPacket(RTPpacket);
+			sendPacket(RTPpacket);
 		}
 
 		//here my be a good place to send dtmf-tones...
@@ -377,28 +382,6 @@ void rtpAudio::PlayOutAudio()
 	}
 }
 
-/*
-void rtpAudio::recordInPacket(short *data, int dataBytes)
-{
-	rtpMutex.lock();
-	if (recBuffer)
-	{
-		int bufferLeft = (recBufferMaxLen-recBufferLen)*sizeof(short);
-		int recBytes = QMIN(dataBytes, bufferLeft);
-		memcpy(&recBuffer[recBufferLen], data, recBytes);
-		recBufferLen+=(recBytes/sizeof(short));
-		if (recBufferLen == recBufferMaxLen)
-		{
-			// Don't overwrite the actual length recorded, it is used later
-			recBuffer = 0;
-			rxMode = RTP_RX_AUDIO_DISCARD;
-		}
-	}
-	else
-		rxMode = RTP_RX_AUDIO_DISCARD;
-	rtpMutex.unlock();
-}
-*/
 void rtpAudio::HandleRxDTMF(RTPPACKET *RTPpacket)
 {
 	DTMF_RFC2833 *dtmf = (DTMF_RFC2833 *)RTPpacket->RtpData;
@@ -416,11 +399,8 @@ void rtpAudio::HandleRxDTMF(RTPPACKET *RTPpacket)
 	}
 }
 
-void rtpAudio::StreamOut(RTPPACKET &RTPpacket)
+void rtpAudio::initPacket(RTPPACKET &RTPpacket)
 {
-	txSequenceNumber += 1;
-	txTimeStamp += txPCMSamplesPerPacket;
-
 	RTPpacket.RtpVPXCC = 128;
 	RTPpacket.RtpMPT = rtpMPT | rtpMarker;
 	rtpMarker = 0;
@@ -428,9 +408,8 @@ void rtpAudio::StreamOut(RTPPACKET &RTPpacket)
 	RTPpacket.RtpTimeStamp = htonl(txTimeStamp);
 	// as long as we are only doing one stream any hard
 	// coded value will do, they must be unique for each stream
+	//TODO how could this be true if this is the same value for audio and video?
 	RTPpacket.RtpSourceID = 0x666;
-
-	sendPacket((char *)&RTPpacket.RtpVPXCC, RTPpacket.len+RTP_HEADER_SIZE);
 }
 
 void rtpAudio::fillPacketwithSilence(RTPPACKET &RTPpacket)
