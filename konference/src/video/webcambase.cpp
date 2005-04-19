@@ -133,12 +133,14 @@ void WebcamBase::ProcessFrame(unsigned char *frame, int fSize)
 
 					//QImage Image(buffer, WCWIDTH, WCHEIGHT, 32, (QRgb *)0, 0, QImage::LittleEndian);
 					//Image.save("/home/maldn/test.png","PNG");
-					QApplication::postEvent(it->eventWindow, new WebcamEvent(WebcamEvent::FrameReady, it));
+					if(it->eventWindow)
+						QApplication::postEvent(it->eventWindow, new WebcamEvent(WebcamEvent::FrameReady, it));
 				}
 				else
 				{
 					memcpy(buffer, frame, fSize);
-					QApplication::postEvent(it->eventWindow, new WebcamEvent(WebcamEvent::FrameReady, it));
+					if(it->eventWindow)
+						QApplication::postEvent(it->eventWindow, new WebcamEvent(WebcamEvent::FrameReady, it));
 				}
 			}
 			else
