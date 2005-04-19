@@ -20,31 +20,47 @@
 #ifndef OSS_H
 #define OSS_H
 
-#include "../rtp/jitter.h"
+//#include "../rtp/jitter.h"
+#include <qstring.h>
 
 /**
  * @author Malte Böhme
  */
-class oss
+class audioOSS
 {
 public:
-	oss();
-	~oss();
-	void setDeviceName(QString name){m_devName = name;};
-	bool openDevice();
-	bool closeDevice();
+	audioOSS();
+	~audioOSS();
+	int OpenAudioDevice(QString devName, int mode);
+
+	/**
+	 * closes the device(s) opened in @ref #OpenAudioDevice()
+	 */
+	void closeDevice();
+	
+	int getBuffer(char *buffer);
+	//void setDeviceName(QString name){m_devName = name;};
+	/*
+	bool openDevice(QString spkDevice, QString micDevice, QString);
+	void closeDevice();
 	int writeBuffer(uchar *buffer, int len);
 	Jitter *getJitterBuffer(){return m_jitter;};
+	*/
 	/**
 	 * Reads data from mic into buffer.
 	 * @returns length
 	 */
+	/*
 	int readBuffer(short *buffer);
 	bool isOpen(){return m_isOpen;};
 	bool isSpeakerHungry(int rxSeqNum);
 	bool isMicrophoneData();
+	*/
+protected:
+	int speakerFd;
+	int microphoneFd;
 private:
-	Jitter *m_jitter;
+	/*Jitter *m_jitter;
 	bool spkSeenData;
 	int spkLowThreshold;
 	int spkUnderrunCount;
@@ -53,6 +69,7 @@ private:
 	QString m_devName;
 	bool m_isOpen;
 	int m_fd;
+	*/
 };
 
 #endif
