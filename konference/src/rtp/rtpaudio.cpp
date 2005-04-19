@@ -201,7 +201,8 @@ bool rtp::setupAudio()
 	        (txMode == RTP_TX_AUDIO_FROM_MICROPHONE) &&
 	        (spkDevice == micDevice))
 	{
-		speakerFd = microphoneFd = open(spkDevice, O_RDWR, 0);
+		speakerFd = open(spkDevice, O_RDWR, 0);
+		microphoneFd = speakerFd;
 	}
 	//we dont..
 	else
@@ -213,9 +214,14 @@ bool rtp::setupAudio()
 			microphoneFd = open(micDevice, O_RDONLY, 0);
 	}
 
-	if (speakerFd || microphoneFd == -1)
+	if (speakerFd  == -1)
 	{
 		kdDebug() << "Cannot open device " << spkDevice << endl;
+		return false;
+	}
+	if (microphoneFd  == -1)
+	{
+		kdDebug() << "Cannot open device " << micDevice << endl;
 		return false;
 	}
 	
