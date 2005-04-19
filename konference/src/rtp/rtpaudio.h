@@ -60,9 +60,9 @@ DTMF_RFC2833;
 #include "jitter.h"
 
 #include "rtplistener.h"
+#include "rtpbase.h"
 
-
-class rtp : public audioOSS, QThread
+class rtp : public rtpBase, audioOSS, QThread
 {
 
 public:
@@ -87,8 +87,6 @@ private:
 	void rtpAudioThreadWorker();
 	void rtpInitialise();
 	bool setupAudio();
-	void OpenSocket();
-	void CloseSocket();
 	void StreamInAudio();
 	void PlayOutAudio();
 	void recordInPacket(short *data, int dataBytes);
@@ -107,9 +105,6 @@ private:
 	int			spkInBuffer;
 
 	QObject *eventWindow;
-	QMutex rtpMutex;
-	QSocketDevice *rtpSocket;
-	QWaitCondition *eventCond;
 	codecBase   *m_codec;
 	Jitter *pJitter;
 	int rxMsPacketSize;
@@ -130,8 +125,6 @@ private:
 	int SilenceLen;
 	uchar rtpMPT;
 	uchar rtpMarker;
-	QHostAddress yourIP;
-	int myPort, yourPort;
 	rtpTxMode txMode;
 	rtpRxMode rxMode;
 	QString micDevice;
@@ -152,13 +145,13 @@ private:
 	short *ToneToSpk;
 	int ToneToSpkSamples;
 	int ToneToSpkPlayed;
-	
+
 	//this is used by the encode/decode functions of the codecs and stores the power-lvl in this frame
 	//used for statistics/powermeter
 	short spkPower2;
-	
-	
-//	audioOSS *m_audioDevice;
+
+
+	//	audioOSS *m_audioDevice;
 };
 
 

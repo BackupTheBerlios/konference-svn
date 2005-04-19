@@ -27,9 +27,10 @@
 rtp::rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, rtpTxMode txm, rtpRxMode rxm)
 {
 	eventWindow = callingApp;
-	yourIP.setAddress(remoteIP);
-	myPort = localPort;
-	yourPort = remotePort;
+	m_remoteIP.setAddress(remoteIP);
+	m_localPort = localPort;
+	m_remotePort = remotePort;
+	
 	txMode = txm;
 	rxMode = rxm;
 	micDevice = micDev;
@@ -74,7 +75,7 @@ void rtp::rtpAudioThreadWorker()
 	bool micFirstTime = true;
 
 	rtpInitialise();
-	OpenSocket();
+	openSocket();
 	//set this to have no mic
 	//txMode = RTP_TX_AUDIO_SILENCE;
 
@@ -90,7 +91,7 @@ void rtp::rtpAudioThreadWorker()
 	txSequenceNumber = 1;
 	txTimeStamp	= 0;
 	MicrophoneOn = true;
-	
+
 	setupAudio();
 
 	timeNextTx = (QTime::currentTime()).addMSecs(rxMsPacketSize);
@@ -108,10 +109,10 @@ void rtp::rtpAudioThreadWorker()
 
 		// Write audio to the speaker, but keep in dejitter buffer as long as possible
 		while (isSpeakerHungry() &&
-		pJitter->AnyData() &&
-		SpeakerOn &&
-		rxMode == RTP_RX_AUDIO_TO_SPEAKER &&
-		pJitter->isPacketQueued(rxSeqNum))
+		        pJitter->AnyData() &&
+		        SpeakerOn &&
+		        rxMode == RTP_RX_AUDIO_TO_SPEAKER &&
+		        pJitter->isPacketQueued(rxSeqNum))
 		{
 			PlayOutAudio();
 		}
@@ -146,7 +147,7 @@ void rtp::rtpAudioThreadWorker()
 	SpeakerOn = false;
 	MicrophoneOn = false;
 	closeDevice();
-	CloseSocket();
+	closeSocket();
 	if (pJitter)
 		delete pJitter;
 	if (ToneToSpk != 0)
@@ -155,6 +156,7 @@ void rtp::rtpAudioThreadWorker()
 
 void rtp::rtpInitialise()
 {
+	initialiseBase();
 	rtpSocket             = 0;
 	rxMsPacketSize        = 20;
 	rxPCMSamplesPerPacket = rxMsPacketSize * PCM_SAMPLES_PER_MS;
@@ -224,7 +226,7 @@ bool rtp::setupAudio()
 		kdDebug() << "Cannot open device " << micDevice << endl;
 		return false;
 	}
-	
+
 	if(speakerFd == microphoneFd)
 		return setupAudioDevice(speakerFd);
 	else
@@ -232,44 +234,6 @@ bool rtp::setupAudio()
 }
 
 void rtp::Debug(QString dbg){kdDebug() << dbg;}
-
-void rtp::OpenSocket()
-{
-	rtpSocket = new QSocketDevice (QSocketDevice::Datagram);
-	rtpSocket->setBlocking(false);
-
-	QString ifName = "eth0";//gContext->GetSetting("SipBindInterface");
-	struct ifreq ifreq;
-	strcpy(ifreq.ifr_name, ifName);
-	if (ioctl(rtpSocket->socket(), SIOCGIFADDR, &ifreq) != 0)
-	{
-		kdDebug() << "Failed to find network interface " << ifName << endl;
-		delete rtpSocket;
-		rtpSocket = 0;
-		return;
-	}
-	struct sockaddr_in * sptr = (struct sockaddr_in *)&ifreq.ifr_addr;
-	QHostAddress myIP;
-	myIP.setAddress(htonl(sptr->sin_addr.s_addr));
-
-
-	if (!rtpSocket->bind(myIP, myPort))
-	{
-		kdDebug() << "Failed to bind for RTP connection " << myIP.toString() << endl;
-		delete rtpSocket;
-		rtpSocket = 0;
-	}
-}
-
-void rtp::CloseSocket()
-{
-	if (rtpSocket)
-	{
-		rtpSocket->close();
-		delete rtpSocket;
-		rtpSocket = 0;
-	}
-}
 
 
 void rtp::PlayToneToSpeaker(short *tone, int Samples)
@@ -578,7 +542,7 @@ void rtp::SendWaitingDtmf()
 			dtmfPacket.RtpTimeStamp = htonl(txTimeStamp);
 			dtmfPacket.RtpSourceID = 0x666;
 
-			rtpSocket->writeBlock((char *)&dtmfPacket.RtpVPXCC, RTP_HEADER_SIZE+sizeof(DTMF_RFC2833), yourIP, yourPort);
+			rtpSocket->writeBlock((char *)&dtmfPacket.RtpVPXCC, RTP_HEADER_SIZE+sizeof(DTMF_RFC2833), m_remoteIP, m_remotePort);
 		}
 	}
 }
@@ -608,7 +572,7 @@ void rtp::StreamOut(RTPPACKET &RTPpacket)
 		// as long as we are only doing one stream any hard
 		// coded value will do, they must be unique for each stream
 
-		rtpSocket->writeBlock((char *)&RTPpacket.RtpVPXCC, RTPpacket.len+RTP_HEADER_SIZE, yourIP, yourPort);
+		rtpSocket->writeBlock((char *)&RTPpacket.RtpVPXCC, RTPpacket.len+RTP_HEADER_SIZE, m_remoteIP, m_remotePort);
 	}
 }
 

@@ -61,7 +61,7 @@ VIDEOBUFFER;
 class rtpVideo : public rtpBase, QThread
 {
 public:
-    rtpVideo(QObject *parent, int localPort, QString remoteIP, int remotePort, int mediaPay, rtpTxMode txm, rtpRxMode rxm);
+	rtpVideo(QObject *parent, int localPort, QString remoteIP, int remotePort, int mediaPay, rtpTxMode txm, rtpRxMode rxm);
 	VIDEOBUFFER *getRxedVideo();
 	VIDEOBUFFER *getVideoBuffer(int len=0);
 	bool queueVideo(VIDEOBUFFER *vb);
@@ -69,13 +69,15 @@ public:
 	void destroyVideoBuffers();
 	void transmitQueuedVideo();
 	void initialise();
-    ~rtpVideo();
+	~rtpVideo();
 	void run();
 	void StreamInVideo();
 	void initVideoBuffers(int Num);
 	int  appendVideoPacket(VIDEOBUFFER *picture, int curLen, RTPPACKET *JBuf, int mLen);
-	
+
 protected:
+	QObject *m_parent;
+	
 	Jitter *pJitter;
 
 	int videoPayload;
@@ -83,6 +85,22 @@ protected:
 	QPtrList<VIDEOBUFFER> rxedVideoFrames;
 	VIDEOBUFFER *videoToTx;
 	int videoFrameFirstSeqNum;
+
+	rtpTxMode txMode;
+	rtpRxMode rxMode;
+
+	unsigned long txTimeStamp;
+	unsigned short txSequenceNumber;
+
+	unsigned long rxTimestamp;
+	unsigned short rxSeqNum;
+
+	bool rxFirstFrame;
+
+	bool killRtpThread;
+
+	uchar rtpMarker;
+	uchar rtpMPT;
 };
 
 #endif

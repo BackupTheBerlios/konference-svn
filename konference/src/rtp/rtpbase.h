@@ -36,7 +36,7 @@
 
 #define RTP_STATS_INTERVAL        1 // Seconds between sending statistics
 
-#include "../codecs/codecbase.h"
+//#include "../codecs/codecbase.h"
 #include "rtpevent.h"
 #include "jitter.h"
 
@@ -67,61 +67,24 @@ enum rtpRxMode
 class rtpBase
 {
 public:
-	rtpBase(QObject *parent);
+	rtpBase();
 
 	virtual ~rtpBase();
-	
+
 protected:
 	void Debug(QString dbg);
-	void OpenSocket();
-	void CloseSocket();
+	void openSocket();
+	void closeSocket();
 	void initialiseBase();
-	void CheckSendStatistics();
-	//void StreamOut(void* pData, int nLen);
-	//void StreamOut(RTPPACKET &RTPpacket);
 
-	QObject *m_parent;
-	
-	bool killRtpThread;
-	
-	QHostAddress yourIP;
-	
-	int myPort,yourPort;
-	
-	rtpTxMode txMode;
-	rtpRxMode rxMode;
-	
-	unsigned long txTimeStamp;
-	unsigned short txSequenceNumber;
-	
-	unsigned long rxTimestamp;
-	unsigned short rxSeqNum;
-	
-	bool rxFirstFrame;
-	
-	uchar rtpMarker;
-	uchar rtpMPT;
+	QHostAddress m_remoteIP;
+	int m_localPort;
+	int m_remotePort;
 
 	QMutex rtpMutex;
 	QWaitCondition *eventCond;
-	
-	QSocketDevice *rtpSocket;
 
-	codecBase *Codec;
-	
-	//statistics
-	QTime timeNextStatistics;
-	QTime timeLastStatistics;
-	int pkIn;
-	int pkOut;
-	int pkMissed;
-	int pkLate;
-	int bytesIn;
-	int bytesOut;
-	int framesIn;
-	int framesOut;
-	int framesInDiscarded;
-	int framesOutDiscarded;
+	QSocketDevice *rtpSocket;
 };
 
 #endif
