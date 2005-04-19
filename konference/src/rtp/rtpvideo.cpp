@@ -36,7 +36,9 @@ rtpVideo::rtpVideo(QObject *parent, int localPort, QString remoteIP, int remoteP
 
 	videoPayload = mediaPay;
 
-	initVideoBuffers(10);
+	//create 10 videobuffers
+	for(int i=0; i<=9; i++)
+		FreeVideoBufferQ.append(new VIDEOBUFFER);
 
 	videoToTx = 0;
 	eventCond = 0;
@@ -57,7 +59,6 @@ rtpVideo::~rtpVideo()
 
 void rtpVideo::initialise()
 {
-	initialiseBase();
 	rtpMPT = videoPayload;
 
 	txSequenceNumber      = 1; //udp packet sequence number
@@ -101,8 +102,6 @@ bool rtpVideo::queueVideo(VIDEOBUFFER *vb)
 			eventCond->wakeAll();
 		res=true;
 	}
-	//	else
-	//		framesOutDiscarded++;
 	rtpMutex.unlock();
 	return res;
 }
@@ -115,7 +114,6 @@ void rtpVideo::transmitQueuedVideo()
 	// ok as its only meant to produce 10-30 frames / second, and we should consume much quicker
 	rtpMutex.lock();
 	VIDEOBUFFER *queuedVideo = videoToTx;
-	//videoToTx = 0;
 	rtpMutex.unlock();
 
 	if (queuedVideo)
@@ -156,8 +154,8 @@ void rtpVideo::transmitQueuedVideo()
 			if (queuedLen == 0)
 				videoPacket.RtpMPT |= RTP_PAYLOAD_MARKER_BIT;  // Last packet has Marker bit set as per RFC 2190
 
-			if (rtpSocket)
-				rtpSocket->writeBlock((char *)&videoPacket.RtpVPXCC, RTP_HEADER_SIZE+sizeof(H263_RFC2190_HDR)+pkLen, m_remoteIP, m_remotePort);
+				sendPacket((char *)&videoPacket.RtpVPXCC, RTP_HEADER_SIZE+sizeof(H263_RFC2190_HDR)+pkLen);
+			
 		}
 		freeVideoBuffer(queuedVideo);
 	}
@@ -191,7 +189,7 @@ void rtpVideo::run()
 
 	while(!killRtpThread)
 	{
-		// Suspend for events
+		// wait for the rtpSocket to have some data
 		eventCond->wait();
 
 		if (killRtpThread)
@@ -220,12 +218,6 @@ void rtpVideo::run()
 	closeSocket();
 	if (pJitter)
 		delete pJitter;
-}
-
-void rtpVideo::initVideoBuffers(int Num)
-{
-	while (Num-- > 0)
-		FreeVideoBufferQ.append(new VIDEOBUFFER);
 }
 
 int rtpVideo::appendVideoPacket(VIDEOBUFFER *picture, int curLen, RTPPACKET *JBuf, int mLen)

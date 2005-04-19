@@ -72,19 +72,19 @@ public:
 	virtual ~rtpBase();
 
 protected:
-	void Debug(QString dbg);
 	void openSocket();
 	void closeSocket();
-	void initialiseBase();
-
+	void sendPacket(char *rtpData, int length);
+	void readPacket(char *rtpData, int length);
 	QHostAddress m_remoteIP;
 	int m_localPort;
 	int m_remotePort;
 
 	QMutex rtpMutex;
 	QWaitCondition *eventCond;
-
-	QSocketDevice *rtpSocket;
+QSocketDevice *rtpSocket;
+private:
+	//QSocketDevice *rtpSocket;
 };
 
 #endif

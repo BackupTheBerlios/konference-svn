@@ -25,15 +25,21 @@
 
 #include "rtpbase.h"
 
-rtpBase::rtpBase(){}
+rtpBase::rtpBase()
+{
+	rtpSocket = 0;
+}
 
 rtpBase::~rtpBase(){}
 
-void rtpBase::Debug(QString dbg){kdDebug() << dbg << endl;}
-
-void rtpBase::initialiseBase()
+void rtpBase::sendPacket(char *rtpData, int length)
 {
-	rtpSocket = 0;
+	rtpSocket->writeBlock(rtpData, length, m_remoteIP, m_remotePort);
+}
+
+void rtpBase::readPacket(char *rtpData, int length)
+{
+	rtpSocket->readBlock(rtpData, length);
 }
 
 void rtpBase::openSocket()

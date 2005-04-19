@@ -25,12 +25,13 @@
 
 
 rtp::rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, rtpTxMode txm, rtpRxMode rxm)
+		: rtpBase()
 {
 	eventWindow = callingApp;
 	m_remoteIP.setAddress(remoteIP);
 	m_localPort = localPort;
 	m_remotePort = remotePort;
-	
+
 	txMode = txm;
 	rxMode = rxm;
 	micDevice = micDev;
@@ -156,8 +157,6 @@ void rtp::rtpAudioThreadWorker()
 
 void rtp::rtpInitialise()
 {
-	initialiseBase();
-	rtpSocket             = 0;
 	rxMsPacketSize        = 20;
 	rxPCMSamplesPerPacket = rxMsPacketSize * PCM_SAMPLES_PER_MS;
 	txMsPacketSize        = 20;
@@ -233,20 +232,6 @@ bool rtp::setupAudio()
 		return (setupAudioDevice(speakerFd) && setupAudioDevice(microphoneFd));
 }
 
-void rtp::Debug(QString dbg){kdDebug() << dbg;}
-
-
-void rtp::PlayToneToSpeaker(short *tone, int Samples)
-{
-	if (SpeakerOn && (rxMode == RTP_RX_AUDIO_TO_SPEAKER) && (ToneToSpk == 0))
-	{
-		ToneToSpk = new short[Samples];
-		memcpy(ToneToSpk, tone, Samples*sizeof(short));
-		ToneToSpkSamples = Samples;
-		ToneToSpkPlayed = 0;
-	}
-}
-
 void rtp::AddToneToAudio(short *buffer, int Samples)
 {
 	if (ToneToSpk != 0)
@@ -264,135 +249,81 @@ void rtp::AddToneToAudio(short *buffer, int Samples)
 	}
 }
 
-
-void rtp::Transmit(int ms)
-{
-	rtpMutex.lock();
-	if (txBuffer)
-		kdDebug() << "Don't tell me to transmit something whilst I'm already busy\n";
-	else
-	{
-		int Samples = ms * PCM_SAMPLES_PER_MS;
-		txBuffer = new short[Samples+txPCMSamplesPerPacket]; // Increase space to multiples of full packets
-		memset(txBuffer, 0, (Samples+txPCMSamplesPerPacket)*2);
-		txBufferLen=Samples;
-		txBufferPtr=0;
-		txMode = RTP_TX_AUDIO_FROM_BUFFER;
-	}
-	rtpMutex.unlock();
-}
-
-void rtp::Transmit(short *pcmBuffer, int Samples)
-{
-	if (pcmBuffer && (Samples > 0))
-	{
-		rtpMutex.lock();
-		if (txBuffer)
-			kdDebug() << "Don't tell me to transmit something whilst I'm already busy\n";
-		else
-		{
-			txBuffer = new short[Samples+txPCMSamplesPerPacket]; // Increase space to multiples of full packets
-			memcpy(txBuffer, pcmBuffer, Samples*sizeof(short));
-			memset(txBuffer+Samples, 0, txPCMSamplesPerPacket*2);
-			txBufferLen=Samples;
-			txBufferPtr=0;
-			txMode = RTP_TX_AUDIO_FROM_BUFFER;
-		}
-		rtpMutex.unlock();
-	}
-}
-
-void rtp::Record(short *pcmBuffer, int Samples)
-{
-	rtpMutex.lock();
-	if (recBuffer)
-		kdDebug() << "Don't tell me to record something whilst I'm already busy\n";
-	else
-	{
-		recBuffer = pcmBuffer;
-		recBufferMaxLen=Samples;
-		recBufferLen=0;
-		rxMode = RTP_RX_AUDIO_TO_BUFFER;
-	}
-	rtpMutex.unlock();
-}
-
 void rtp::StreamInAudio()
 {
 	RTPPACKET rtpDump;
 	RTPPACKET *JBuf;
 	bool tryAgain;
 
-	if (rtpSocket)
+	do
 	{
-		do
-		{
-			tryAgain = false; // We keep going until we empty the socket
+		tryAgain = false; // We keep going until we empty the socket
 
-			// Get a buffer from the Jitter buffer to put the packet in
-			if ((JBuf = pJitter->GetJBuffer()) != 0)
+		// Get a buffer from the Jitter buffer to put the packet in
+		if ((JBuf = pJitter->GetJBuffer()) != 0)
+		{
+			JBuf->len = rtpSocket->readBlock((char *)&JBuf->RtpVPXCC, sizeof(RTPPACKET));
+			if (JBuf->len > 0)
 			{
-				JBuf->len = rtpSocket->readBlock((char *)&JBuf->RtpVPXCC, sizeof(RTPPACKET));
-				if (JBuf->len > 0)
+				tryAgain = true;
+				if (PAYLOAD(JBuf) == rtpMPT)
 				{
-					tryAgain = true;
-					if (PAYLOAD(JBuf) == rtpMPT)
+					JBuf->RtpSequenceNumber = ntohs(JBuf->RtpSequenceNumber);
+					JBuf->RtpTimeStamp = ntohl(JBuf->RtpTimeStamp);
+					if (rxFirstFrame)
 					{
-						JBuf->RtpSequenceNumber = ntohs(JBuf->RtpSequenceNumber);
-						JBuf->RtpTimeStamp = ntohl(JBuf->RtpTimeStamp);
-						if (rxFirstFrame)
-						{
-							rxFirstFrame = FALSE;
-							rxSeqNum = JBuf->RtpSequenceNumber;
-						}
-						if (PKLATE(rxSeqNum, JBuf->RtpSequenceNumber))
-						{
-							kdDebug() << "Packet arrived too late to play, try increasing jitter buffer\n";
-							pJitter->FreeJBuffer(JBuf);
-						}
-						else
-							pJitter->InsertJBuffer(JBuf);
+						rxFirstFrame = FALSE;
+						rxSeqNum = JBuf->RtpSequenceNumber;
 					}
-					else if (PAYLOAD(JBuf) == dtmfPayload)
+					if (PKLATE(rxSeqNum, JBuf->RtpSequenceNumber))
 					{
-						tryAgain = true; // Force us to get another frame since this one is additional
-						HandleRxDTMF(JBuf);
-						if (PKLATE(rxSeqNum, JBuf->RtpSequenceNumber))
-							pJitter->FreeJBuffer(JBuf);
-						else
-							pJitter->InsertDTMF(JBuf); // Do this just so seq-numbers stay intact, it gets discarded later
-					}
-					else
-					{
-						if (PAYLOAD(JBuf) != RTP_PAYLOAD_COMF_NOISE)
-							kdDebug() << "Received Invalid Payload " << (int)JBuf->RtpMPT << "\n";
-						else
-							kdDebug() << "Received Comfort Noise Payload\n";
+						kdDebug() << "Packet arrived too late to play, try increasing jitter buffer\n";
 						pJitter->FreeJBuffer(JBuf);
 					}
+					else
+						pJitter->InsertJBuffer(JBuf);
 				}
-				else // No received frames, free the buffer
-					pJitter->FreeJBuffer(JBuf);
-			}
-
-			// No free buffers, still get the data from the socket but dump it. Unlikely to recover from this by
-			// ourselves so we really need to discard all queued frames and reset the receiver
-			else
-			{
-				rtpSocket->readBlock((char *)&rtpDump.RtpVPXCC, sizeof(RTPPACKET));
-				if (!oobError)
+				else if (PAYLOAD(JBuf) == dtmfPayload)
 				{
-					kdDebug() << "Dumping received RTP frame, no free buffers; rx-mode " << rxMode << "; tx-mode " << txMode << endl;
-					pJitter->Debug();
-					oobError = true;
+					tryAgain = true; // Force us to get another frame since this one is additional
+					HandleRxDTMF(JBuf);
+					if (PKLATE(rxSeqNum, JBuf->RtpSequenceNumber))
+						pJitter->FreeJBuffer(JBuf);
+					else
+						pJitter->InsertDTMF(JBuf); // Do this just so seq-numbers stay intact, it gets discarded later
 				}
+				else
+				{
+					if (PAYLOAD(JBuf) != RTP_PAYLOAD_COMF_NOISE)
+						kdDebug() << "Received Invalid Payload " << (int)JBuf->RtpMPT << "\n";
+					else
+						kdDebug() << "Received Comfort Noise Payload\n";
+					pJitter->FreeJBuffer(JBuf);
+				}
+			}
+			else // No received frames, free the buffer
+				pJitter->FreeJBuffer(JBuf);
+		}
+
+		// No free buffers, still get the data from the socket but dump it. Unlikely to recover from this by
+		// ourselves so we really need to discard all queued frames and reset the receiver
+		else
+		{
+			//rtpSocket->readBlock((char *)&rtpDump.RtpVPXCC, sizeof(RTPPACKET));
+			readPacket((char *)&rtpDump.RtpVPXCC, sizeof(RTPPACKET));
+			if (!oobError)
+			{
+				kdDebug() << "Dumping received RTP frame, no free buffers; rx-mode " << rxMode << "; tx-mode " << txMode << endl;
+				pJitter->Debug();
+				oobError = true;
 			}
 		}
-		while (tryAgain);
-
-		// Check size of Jitter buffer, make sure it doesn't grow too big
-		//pJitter->Debug();
 	}
+	while (tryAgain);
+
+	// Check size of Jitter buffer, make sure it doesn't grow too big
+	//pJitter->Debug();
+
 }
 
 void rtp::PlayOutAudio()
@@ -547,14 +478,6 @@ void rtp::SendWaitingDtmf()
 	}
 }
 
-void rtp::StreamOut(void* pData, int nLen)
-{
-	RTPPACKET RTPpacket;
-	memcpy(RTPpacket.RtpData, pData, nLen);
-	RTPpacket.len = nLen;
-	StreamOut(RTPpacket);
-}
-
 void rtp::StreamOut(RTPPACKET &RTPpacket)
 {
 	if (rtpSocket)
@@ -567,12 +490,12 @@ void rtp::StreamOut(RTPPACKET &RTPpacket)
 		rtpMarker = 0;
 		RTPpacket.RtpSequenceNumber = htons(txSequenceNumber);
 		RTPpacket.RtpTimeStamp = htonl(txTimeStamp);
-		RTPpacket.RtpSourceID = 0x666;
-
 		// as long as we are only doing one stream any hard
 		// coded value will do, they must be unique for each stream
+		RTPpacket.RtpSourceID = 0x666;
 
-		rtpSocket->writeBlock((char *)&RTPpacket.RtpVPXCC, RTPpacket.len+RTP_HEADER_SIZE, m_remoteIP, m_remotePort);
+		//rtpSocket->writeBlock((char *)&RTPpacket.RtpVPXCC, RTPpacket.len+RTP_HEADER_SIZE, m_remoteIP, m_remotePort);
+		sendPacket((char *)&RTPpacket.RtpVPXCC, RTPpacket.len+RTP_HEADER_SIZE);
 	}
 }
 

@@ -72,7 +72,6 @@ public:
 	~rtpVideo();
 	void run();
 	void StreamInVideo();
-	void initVideoBuffers(int Num);
 	int  appendVideoPacket(VIDEOBUFFER *picture, int curLen, RTPPACKET *JBuf, int mLen);
 
 protected:

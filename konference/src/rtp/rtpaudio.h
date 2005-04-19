@@ -70,19 +70,6 @@ public:
 	~rtp();
 	virtual void run();
 
-	void Transmit(short *pcmBuffer, int Samples);
-	void Transmit(int ms);
-	void Record(short *pcmBuffer, int Samples);
-	void StopTransmitRecord() { rtpMutex.lock(); txMode=RTP_TX_AUDIO_SILENCE; rxMode=RTP_RX_AUDIO_DISCARD; if (txBuffer) delete txBuffer; txBuffer=0; recBuffer=0; recBufferMaxLen=0; rtpMutex.unlock(); };
-bool Finished()           { rtpMutex.lock(); bool b = ((txBuffer == 0) && (recBuffer == 0)); rtpMutex.unlock(); return b;};
-	int  GetRecordSamples()   { rtpMutex.lock(); int s = recBufferLen; rtpMutex.unlock(); return s;};
-	bool checkDtmf()          { rtpMutex.lock(); bool b=(dtmfIn[0] != 0); rtpMutex.unlock(); return b; }
-	QString getDtmf()         { rtpMutex.lock(); QString s = dtmfIn; dtmfIn = ""; rtpMutex.unlock(); return s; }
-	void sendDtmf(char d)     { rtpMutex.lock(); dtmfOut.append(d); rtpMutex.unlock(); }
-	bool toggleMute()         { micMuted = !micMuted; return micMuted; }
-	void PlayToneToSpeaker(short *tone, int Samples);
-
-
 private:
 	void rtpAudioThreadWorker();
 	void rtpInitialise();
@@ -92,13 +79,11 @@ private:
 	void recordInPacket(short *data, int dataBytes);
 	void HandleRxDTMF(RTPPACKET *RTPpacket);
 	void SendWaitingDtmf();
-	void StreamOut(void* pData, int nLen);
 	void StreamOut(RTPPACKET &RTPpacket);
 	void fillPacketwithSilence(RTPPACKET &RTPpacket);
 	bool fillPacketfromMic(RTPPACKET &RTPpacket);
 	void fillPacketfromBuffer(RTPPACKET &RTPpacket);
 	void AddToneToAudio(short *buffer, int Samples);
-	void Debug(QString dbg);
 
 
 	short		SpkBuffer[1][SPK_BUFFER_SIZE];
