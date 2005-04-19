@@ -192,7 +192,6 @@ void rtpVideo::run()
 		msleep(20);
 	}
 
-
 	if (videoToTx)
 	{
 		freeVideoBuffer(videoToTx);
@@ -237,6 +236,7 @@ void rtpVideo::StreamInVideo()
 {
 	RTPPACKET *JBuf;
 	int mLen, reason;
+	//TODO nice typo :D
 	bool MarketBitSet = false;
 
 	if (!rtpSocket)
