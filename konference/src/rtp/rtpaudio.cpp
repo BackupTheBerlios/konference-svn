@@ -24,7 +24,7 @@
 #include "../codecs/gsmcodec.h"
 
 
-rtp::rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, rtpTxMode txm, rtpRxMode rxm)
+rtpAudio::rtpAudio(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, rtpTxMode txm, rtpRxMode rxm)
 		: rtpBase()
 {
 	eventWindow = callingApp;
@@ -52,7 +52,7 @@ rtp::rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, i
 	start();
 }
 
-rtp::~rtp()
+rtpAudio::~rtpAudio()
 {
 	killRtpThread = true;
 	SpeakerOn = false;
@@ -60,13 +60,13 @@ rtp::~rtp()
 	wait();
 }
 
-void rtp::run()
+void rtpAudio::run()
 {
 	rtpAudioThreadWorker();
 }
 
 
-void rtp::rtpAudioThreadWorker()
+void rtpAudio::rtpAudioThreadWorker()
 {
 	RTPPACKET RTPpacket;
 	QTime timeNextTx;
@@ -152,7 +152,7 @@ void rtp::rtpAudioThreadWorker()
 		delete ToneToSpk;
 }
 
-void rtp::rtpInitialise()
+void rtpAudio::rtpInitialise()
 {
 	rxMsPacketSize        = 20;
 	rxPCMSamplesPerPacket = rxMsPacketSize * PCM_SAMPLES_PER_MS;
@@ -192,7 +192,7 @@ void rtp::rtpInitialise()
 }
 
 
-bool rtp::setupAudio()
+bool rtpAudio::setupAudio()
 {
 	//we use the same device for read and write
 	if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER) &&
@@ -229,7 +229,7 @@ bool rtp::setupAudio()
 		return (setupAudioDevice(speakerFd) && setupAudioDevice(microphoneFd));
 }
 
-void rtp::AddToneToAudio(short *buffer, int Samples)
+void rtpAudio::AddToneToAudio(short *buffer, int Samples)
 {
 	if (ToneToSpk != 0)
 	{
@@ -246,7 +246,7 @@ void rtp::AddToneToAudio(short *buffer, int Samples)
 	}
 }
 
-void rtp::StreamInAudio()
+void rtpAudio::StreamInAudio()
 {
 	RTPPACKET rtpDump;
 	RTPPACKET *JBuf;
@@ -323,7 +323,7 @@ void rtp::StreamInAudio()
 
 }
 
-void rtp::PlayOutAudio()
+void rtpAudio::PlayOutAudio()
 {
 	bool tryAgain;
 	int mLen, m, reason;
@@ -402,7 +402,7 @@ void rtp::PlayOutAudio()
 	}
 }
 
-void rtp::recordInPacket(short *data, int dataBytes)
+void rtpAudio::recordInPacket(short *data, int dataBytes)
 {
 	rtpMutex.lock();
 	if (recBuffer)
@@ -423,7 +423,7 @@ void rtp::recordInPacket(short *data, int dataBytes)
 	rtpMutex.unlock();
 }
 
-void rtp::HandleRxDTMF(RTPPACKET *RTPpacket)
+void rtpAudio::HandleRxDTMF(RTPPACKET *RTPpacket)
 {
 	DTMF_RFC2833 *dtmf = (DTMF_RFC2833 *)RTPpacket->RtpData;
 	RTPpacket->RtpSequenceNumber = ntohs(RTPpacket->RtpSequenceNumber);
@@ -440,7 +440,7 @@ void rtp::HandleRxDTMF(RTPPACKET *RTPpacket)
 	}
 }
 
-void rtp::SendWaitingDtmf()
+void rtpAudio::SendWaitingDtmf()
 {
 	if ((dtmfPayload != -1) && (rtpSocket))
 	{
@@ -475,7 +475,7 @@ void rtp::SendWaitingDtmf()
 	}
 }
 
-void rtp::StreamOut(RTPPACKET &RTPpacket)
+void rtpAudio::StreamOut(RTPPACKET &RTPpacket)
 {
 	if (rtpSocket)
 	{
@@ -496,13 +496,12 @@ void rtp::StreamOut(RTPPACKET &RTPpacket)
 	}
 }
 
-
-void rtp::fillPacketwithSilence(RTPPACKET &RTPpacket)
+void rtpAudio::fillPacketwithSilence(RTPPACKET &RTPpacket)
 {
 	RTPpacket.len = m_codec->Silence(RTPpacket.RtpData, txMsPacketSize);
 }
 
-bool rtp::fillPacketfromMic(RTPPACKET &RTPpacket)
+bool rtpAudio::fillPacketfromMic(RTPPACKET &RTPpacket)
 {
 	int gain=0;
 	if (MicrophoneOn)
@@ -524,7 +523,7 @@ bool rtp::fillPacketfromMic(RTPPACKET &RTPpacket)
 	return true;
 }
 
-void rtp::fillPacketfromBuffer(RTPPACKET &RTPpacket)
+void rtpAudio::fillPacketfromBuffer(RTPPACKET &RTPpacket)
 {
 	rtpMutex.lock();
 	if (txBuffer == 0)

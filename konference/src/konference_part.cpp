@@ -291,7 +291,7 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 		m_audioCodec = new g711ulaw();
 	}
 
-	m_rtpAudio = new rtp((QWidget*)this, KonferenceSettings::localAudioPort(), remoteIP,
+	m_rtpAudio = new rtpAudio((QWidget*)this, KonferenceSettings::localAudioPort(), remoteIP,
 	                          remoteAudioPort, audioPayload, dtmfPayload,
 	                          KonferenceSettings::inputDevice(),
 							  KonferenceSettings::outputDevice(), m_audioCodec);

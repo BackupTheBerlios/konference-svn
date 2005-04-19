@@ -34,7 +34,7 @@ class KURL;
 
 class KonferenceVideoWidget;
 class rtpVideo;
-class rtp;
+class rtpAudio;
 class H263Container;
 class wcClient;
 class SipContainer;
@@ -144,7 +144,7 @@ private:
 	H263Container *h263;
 
 	rtpVideo *m_rtpVideo;
-	rtp *m_rtpAudio;
+	rtpAudio *m_rtpAudio;
 
 	wcClient *m_localWebcamClient;
 	wcClient *m_txWebcamClient;

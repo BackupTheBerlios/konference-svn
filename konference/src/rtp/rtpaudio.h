@@ -59,15 +59,14 @@ DTMF_RFC2833;
 
 #include "jitter.h"
 
-#include "rtplistener.h"
 #include "rtpbase.h"
 
-class rtp : public rtpBase, audioOSS, QThread
+class rtpAudio : public rtpBase, audioOSS, QThread
 {
 
 public:
-	rtp(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, rtpTxMode txm=RTP_TX_AUDIO_FROM_MICROPHONE, rtpRxMode rxm=RTP_RX_AUDIO_TO_SPEAKER);
-	~rtp();
+	rtpAudio(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, rtpTxMode txm=RTP_TX_AUDIO_FROM_MICROPHONE, rtpRxMode rxm=RTP_RX_AUDIO_TO_SPEAKER);
+	~rtpAudio();
 	virtual void run();
 
 private:
