@@ -20,7 +20,7 @@
 #ifndef SPEEXCODEC_H
 #define SPEEXCODEC_H
 
-#include <speex.h>
+//#include <speex.h>
 
 #include "codecbase.h"
 
