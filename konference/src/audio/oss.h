@@ -23,8 +23,8 @@
 #include "../rtp/jitter.h"
 
 /**
-@author Malte Böhme
-*/
+ * @author Malte Böhme
+ */
 class oss
 {
 public:

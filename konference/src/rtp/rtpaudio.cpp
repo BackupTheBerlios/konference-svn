@@ -75,7 +75,23 @@ void rtp::rtpAudioThreadWorker()
 
 	rtpInitialise();
 	OpenSocket();
-	StartTxRx();
+	//set this to have no mic
+	//txMode = RTP_TX_AUDIO_SILENCE;
+
+	PlayoutDelay = SpkJitter;
+	PlayLen = 0;
+	memset(SilenceBuffer, 0, sizeof(SilenceBuffer));
+	SilenceLen = rxPCMSamplesPerPacket * sizeof(short);
+	rxTimestamp = 0;
+	rxSeqNum = 0;
+	rxFirstFrame = true;
+	SpeakerOn = true;
+
+	txSequenceNumber = 1;
+	txTimeStamp	= 0;
+	MicrophoneOn = true;
+	
+	setupAudio();
 
 	timeNextTx = (QTime::currentTime()).addMSecs(rxMsPacketSize);
 
@@ -86,7 +102,7 @@ void rtp::rtpAudioThreadWorker()
 		// usleep(10000) seems to cause a 20ms sleep whereas usleep(0)
 		// seems to sleep for ~10ms
 		usleep(10000);
-		
+
 		// Pull in all received packets
 		StreamInAudio();
 
@@ -122,7 +138,9 @@ void rtp::rtpAudioThreadWorker()
 		SendWaitingDtmf();
 	}
 
-	StopTxRx();
+	SpeakerOn = false;
+	MicrophoneOn = false;
+	closeAudioDevice();
 	CloseSocket();
 	if (pJitter)
 		delete pJitter;
@@ -171,64 +189,45 @@ void rtp::rtpInitialise()
 }
 
 
-void rtp::StartTxRx()
+bool rtp::setupAudio()
 {
-	if (rtpSocket == 0)
+	//we use the same device for read and write
+	if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER) &&
+	        (txMode == RTP_TX_AUDIO_FROM_MICROPHONE) &&
+	        (spkDevice == micDevice))
 	{
-		kdDebug() << "Cannot start RTP spk/mic, socket not opened\n";
-		return;
+		speakerFd = microphoneFd = open(spkDevice, O_RDWR, 0);
 	}
-
-	// Open the audio devices
-	if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER) && (txMode == RTP_TX_AUDIO_FROM_MICROPHONE) && (spkDevice == micDevice))
-		speakerFd = OpenAudioDevice(spkDevice, O_RDWR);
+	//we dont..
 	else
 	{
 		if (rxMode == RTP_RX_AUDIO_TO_SPEAKER)
-			speakerFd = OpenAudioDevice(spkDevice, O_WRONLY);
+			speakerFd = open(spkDevice, O_WRONLY, 0);
 
-		if ((txMode == RTP_TX_AUDIO_FROM_MICROPHONE) && (micDevice != "None"))
-			microphoneFd = OpenAudioDevice(micDevice, O_RDONLY);
+		if ((txMode == RTP_TX_AUDIO_FROM_MICROPHONE))
+			microphoneFd = open(micDevice, O_RDONLY, 0);
 	}
 
-	if (speakerFd != -1)
+	if (speakerFd || microphoneFd == -1)
 	{
-		PlayoutDelay = SpkJitter;
-		PlayLen = 0;
-		memset(SilenceBuffer, 0, sizeof(SilenceBuffer));
-		SilenceLen = rxPCMSamplesPerPacket * sizeof(short);
-		rxTimestamp = 0;
-		rxSeqNum = 0;
-		rxFirstFrame = true;
-		SpeakerOn = true;
+		kdDebug() << "Cannot open device " << spkDevice << endl;
+		return false;
 	}
-
-	if (microphoneFd != -1)
-	{
-		txSequenceNumber = 1;
-		txTimeStamp	= 0;
-		MicrophoneOn = true;
-	}
+	
+	if(speakerFd == microphoneFd)
+		return setupAudioDevice(speakerFd);
 	else
-		txMode = RTP_TX_AUDIO_SILENCE;
+		return (setupAudioDevice(speakerFd) && setupAudioDevice(microphoneFd));
 }
 
-
-int rtp::OpenAudioDevice(QString devName, int mode)
+bool rtp::setupAudioDevice(int fd)
 {
-	int fd = open(devName, mode, 0);
-	if (fd == -1)
-	{
-		kdDebug() << "Cannot open device " << devName << endl;
-		return -1;
-	}
-
 	int format = AFMT_S16_LE;//AFMT_MU_LAW;
 	if (ioctl(fd, SNDCTL_DSP_SETFMT, &format) == -1)
 	{
 		kdDebug() << "Error setting audio driver format\n";
 		close(fd);
-		return -1;
+		return false;
 	}
 
 	int channels = 1;
@@ -236,7 +235,7 @@ int rtp::OpenAudioDevice(QString devName, int mode)
 	{
 		kdDebug() << "Error setting audio driver num-channels\n";
 		close(fd);
-		return -1;
+		return false;
 	}
 
 	int speed = 8000; // 8KHz
@@ -244,14 +243,14 @@ int rtp::OpenAudioDevice(QString devName, int mode)
 	{
 		kdDebug() << "Error setting audio driver speed\n";
 		close(fd);
-		return -1;
+		return false;
 	}
 
 	if ((format != AFMT_S16_LE/*AFMT_MU_LAW*/) || (channels != 1) || (speed != 8000))
 	{
 		kdDebug() << "Error setting audio driver; " << format << ", " << channels << ", " << speed << endl;
 		close(fd);
-		return -1;
+		return false;
 	}
 
 	uint frag_size = 0x7FFF0007; // unlimited number of fragments; fragment size=128 bytes (ok for most RTP sample sizes)
@@ -259,7 +258,7 @@ int rtp::OpenAudioDevice(QString devName, int mode)
 	{
 		kdDebug() << "Error setting audio fragment size\n";
 		close(fd);
-		return -1;
+		return false;
 	}
 
 	int flags;
@@ -269,15 +268,12 @@ int rtp::OpenAudioDevice(QString devName, int mode)
 		fcntl(fd, F_SETFL, flags);
 	}
 
-return fd;
+	return true;
 }
 
 
-void rtp::StopTxRx()
+void rtp::closeAudioDevice()
 {
-	SpeakerOn = false;
-	MicrophoneOn = false;
-
 	if (speakerFd > 0)
 		close(speakerFd);
 	if ((microphoneFd != speakerFd) && (microphoneFd > 0))
@@ -317,7 +313,6 @@ void rtp::OpenSocket()
 		rtpSocket = 0;
 	}
 }
-
 
 void rtp::CloseSocket()
 {

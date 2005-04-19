@@ -55,6 +55,7 @@ DTMF_RFC2833;
 
 
 #include "../codecs/codecbase.h"
+#include "../audio/oss.h"
 
 #include "jitter.h"
 
@@ -85,9 +86,9 @@ bool Finished()           { rtpMutex.lock(); bool b = ((txBuffer == 0) && (recBu
 private:
 	void rtpAudioThreadWorker();
 	void rtpInitialise();
-	void StartTxRx();
-	int  OpenAudioDevice(QString devName, int mode);
-	void StopTxRx();
+	bool setupAudio();
+	bool setupAudioDevice(int fd);
+	void closeAudioDevice();
 	void OpenSocket();
 	void CloseSocket();
 	void StreamInAudio();
@@ -164,6 +165,9 @@ private:
 	//this is used by the encode/decode functions of the codecs and stores the power-lvl in this frame
 	//used for statistics/powermeter
 	short spkPower2;
+	
+	
+	oss *m_audioDevice;
 };
 
 
