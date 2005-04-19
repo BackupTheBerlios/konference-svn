@@ -62,7 +62,7 @@ DTMF_RFC2833;
 #include "rtplistener.h"
 
 
-class rtp : public QThread
+class rtp : public audioOSS, QThread
 {
 
 public:
@@ -87,7 +87,6 @@ private:
 	void rtpAudioThreadWorker();
 	void rtpInitialise();
 	bool setupAudio();
-	bool setupAudioDevice(int fd);
 	void closeAudioDevice();
 	void OpenSocket();
 	void CloseSocket();
@@ -167,7 +166,7 @@ private:
 	short spkPower2;
 	
 	
-	oss *m_audioDevice;
+//	audioOSS *m_audioDevice;
 };
 
 

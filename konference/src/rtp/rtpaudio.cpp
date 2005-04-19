@@ -220,58 +220,6 @@ bool rtp::setupAudio()
 		return (setupAudioDevice(speakerFd) && setupAudioDevice(microphoneFd));
 }
 
-bool rtp::setupAudioDevice(int fd)
-{
-	int format = AFMT_S16_LE;//AFMT_MU_LAW;
-	if (ioctl(fd, SNDCTL_DSP_SETFMT, &format) == -1)
-	{
-		kdDebug() << "Error setting audio driver format\n";
-		close(fd);
-		return false;
-	}
-
-	int channels = 1;
-	if (ioctl(fd, SNDCTL_DSP_CHANNELS, &channels) == -1)
-	{
-		kdDebug() << "Error setting audio driver num-channels\n";
-		close(fd);
-		return false;
-	}
-
-	int speed = 8000; // 8KHz
-	if (ioctl(fd, SNDCTL_DSP_SPEED, &speed) == -1)
-	{
-		kdDebug() << "Error setting audio driver speed\n";
-		close(fd);
-		return false;
-	}
-
-	if ((format != AFMT_S16_LE/*AFMT_MU_LAW*/) || (channels != 1) || (speed != 8000))
-	{
-		kdDebug() << "Error setting audio driver; " << format << ", " << channels << ", " << speed << endl;
-		close(fd);
-		return false;
-	}
-
-	uint frag_size = 0x7FFF0007; // unlimited number of fragments; fragment size=128 bytes (ok for most RTP sample sizes)
-	if (ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &frag_size) == -1)
-	{
-		kdDebug() << "Error setting audio fragment size\n";
-		close(fd);
-		return false;
-	}
-
-	int flags;
-	if ((flags = fcntl(fd, F_GETFL, 0)) > 0)
-	{
-		flags &= O_NDELAY;
-		fcntl(fd, F_SETFL, flags);
-	}
-
-	return true;
-}
-
-
 void rtp::closeAudioDevice()
 {
 	if (speakerFd > 0)

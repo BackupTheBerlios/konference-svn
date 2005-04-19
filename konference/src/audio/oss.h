@@ -32,13 +32,14 @@ public:
 	audioOSS();
 	~audioOSS();
 	int OpenAudioDevice(QString devName, int mode);
-
+	bool setupAudioDevice(int fd);
 	/**
 	 * closes the device(s) opened in @ref #OpenAudioDevice()
 	 */
 	void closeDevice();
 	
 	int getBuffer(char *buffer);
+	bool isMicrophoneData();
 	//void setDeviceName(QString name){m_devName = name;};
 	/*
 	bool openDevice(QString spkDevice, QString micDevice, QString);

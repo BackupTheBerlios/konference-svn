@@ -64,60 +64,45 @@ bool audioOSS::isMicrophoneData()
 	return false;
 }
 
-int audioOSS::OpenAudioDevice(QString devName, int mode)
+bool audioOSS::setupAudioDevice(int fd)
 {
-	int fd = open(devName, mode, 0);
-	if (fd == -1)
-	{
-		cerr << "Cannot open device " << devName << endl;
-		return -1;
-	}
-
-	// Set Full Duplex operation
-	/*if (ioctl(fd, SNDCTL_DSP_SETDUPLEX, 0) == -1)
-	{
-	    cerr << "Error setting audio driver duplex\n";
-	    close(fd);
-	    return -1;
-	}*/
-
 	int format = AFMT_S16_LE;//AFMT_MU_LAW;
 	if (ioctl(fd, SNDCTL_DSP_SETFMT, &format) == -1)
 	{
-		cerr << "Error setting audio driver format\n";
+		kdDebug() << "Error setting audio driver format\n";
 		close(fd);
-		return -1;
+		return false;
 	}
 
 	int channels = 1;
 	if (ioctl(fd, SNDCTL_DSP_CHANNELS, &channels) == -1)
 	{
-		cerr << "Error setting audio driver num-channels\n";
+		kdDebug() << "Error setting audio driver num-channels\n";
 		close(fd);
-		return -1;
+		return false;
 	}
 
 	int speed = 8000; // 8KHz
 	if (ioctl(fd, SNDCTL_DSP_SPEED, &speed) == -1)
 	{
-		cerr << "Error setting audio driver speed\n";
+		kdDebug() << "Error setting audio driver speed\n";
 		close(fd);
-		return -1;
+		return false;
 	}
 
 	if ((format != AFMT_S16_LE/*AFMT_MU_LAW*/) || (channels != 1) || (speed != 8000))
 	{
-		cerr << "Error setting audio driver; " << format << ", " << channels << ", " << speed << endl;
+		kdDebug() << "Error setting audio driver; " << format << ", " << channels << ", " << speed << endl;
 		close(fd);
-		return -1;
+		return false;
 	}
 
 	uint frag_size = 0x7FFF0007; // unlimited number of fragments; fragment size=128 bytes (ok for most RTP sample sizes)
 	if (ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &frag_size) == -1)
 	{
-		cerr << "Error setting audio fragment size\n";
+		kdDebug() << "Error setting audio fragment size\n";
 		close(fd);
-		return -1;
+		return false;
 	}
 
 	int flags;
@@ -127,15 +112,5 @@ int audioOSS::OpenAudioDevice(QString devName, int mode)
 		fcntl(fd, F_SETFL, flags);
 	}
 
-	/*    audio_buf_info info;
-	    if ((ioctl(fd, SNDCTL_DSP_GETBLKSIZE, &frag_size) == -1) ||
-	        (ioctl(fd, SNDCTL_DSP_GETOSPACE, &info) == -1))
-	    {
-	        cerr << "Error getting audio driver fragment info\n";
-	        close(fd);
-	        return -1;
-	    }*/
-	//cout << "Frag size " << frag_size << " Fragments " << info.fragments << " Ftotal " << info.fragstotal << endl;
-	return fd;
+	return true;
 }
-
