@@ -31,13 +31,26 @@ rtpBase::rtpBase(QString remoteIP, int localPort, int remotePort)
 	m_remoteIP.setAddress(remoteIP);
 	m_localPort = localPort;
 	m_remotePort = remotePort;
-	
+
+
+	txSequenceNumber      = 0; //udp packet sequence number
 }
 
-rtpBase::~rtpBase(){}
+rtpBase::~rtpBase()
+{
+	if(rtpSocket)
+		delete rtpSocket;
+}
 
 void rtpBase::sendPacket(RTPPACKET &RTPpacket)
 {
+	txSequenceNumber++;
+	RTPpacket.RtpSequenceNumber = htons(txSequenceNumber);
+	// as long as we are only doing one stream any hard
+	// coded value will do, they must be unique for each stream
+	//TODO how could this be true if this is the same value for audio and video? - yes , b/c its another port?
+	RTPpacket.RtpSourceID = 0x666;
+
 	rtpSocket->writeBlock((char *)&RTPpacket.RtpVPXCC, RTPpacket.len + RTP_HEADER_SIZE, m_remoteIP, m_remotePort);
 }
 

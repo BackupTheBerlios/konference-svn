@@ -76,13 +76,16 @@ protected:
 	void closeSocket();
 	void sendPacket(RTPPACKET &RTPpacket);
 	void readPacket(char *rtpData, int length);
-	QHostAddress m_remoteIP;
-	int m_localPort;
-	int m_remotePort;
+
 
 	QMutex rtpMutex;
 QSocketDevice *rtpSocket;
 private:
+	QHostAddress m_remoteIP;
+	int m_localPort;
+	int m_remotePort;
+
+	unsigned short txSequenceNumber;
 	//QSocketDevice *rtpSocket;
 };
 

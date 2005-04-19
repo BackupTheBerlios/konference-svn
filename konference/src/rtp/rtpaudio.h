@@ -101,8 +101,8 @@ private:
 	ulong rxTimestamp;
 	ushort rxSeqNum;
 	bool rxFirstFrame;
-	ushort txSequenceNumber;
-	ulong txTimeStamp;
+unsigned long txTimeStamp;
+	
 	int PlayoutDelay;
 	short SilenceBuffer[MAX_DECOMP_AUDIO_SAMPLES];
 	int PlayLen;

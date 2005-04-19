@@ -79,9 +79,6 @@ void rtpAudio::rtpAudioThreadWorker()
 	rxSeqNum = 0;
 	rxFirstFrame = true;
 
-	txSequenceNumber = 1;
-	txTimeStamp	= 0;
-
 	setupAudio();
 
 	timeNextTx = (QTime::currentTime()).addMSecs(rxMsPacketSize);
@@ -113,7 +110,6 @@ void rtpAudio::rtpAudioThreadWorker()
 			micFirstTime = false;
 			if (fillPacketfromMic(RTPpacket))
 			{
-				txSequenceNumber += 1;
 				txTimeStamp += txPCMSamplesPerPacket;
 				initPacket(RTPpacket);
 				sendPacket(RTPpacket);
@@ -132,7 +128,6 @@ void rtpAudio::rtpAudioThreadWorker()
 			case RTP_TX_AUDIO_SILENCE:           fillPacketwithSilence(RTPpacket); break;
 			case RTP_TX_AUDIO_FROM_BUFFER:       fillPacketfromBuffer(RTPpacket);  break;
 			}
-			txSequenceNumber += 1;
 			txTimeStamp += txPCMSamplesPerPacket;
 			initPacket(RTPpacket);
 			sendPacket(RTPpacket);
@@ -159,8 +154,6 @@ void rtpAudio::rtpInitialise()
 	SpkJitter             = 5; // Size of the jitter buffer * (rxMsPacketSize/2); so 5=50ms for 20ms packet size
 	speakerFd             = -1;
 	microphoneFd          = -1;
-	txSequenceNumber      = 1; //udp packet sequence number
-	txTimeStamp	          = 0;
 	txBuffer              = 0;
 	lastDtmfTimestamp     = 0;
 	dtmfIn                = "";
@@ -404,12 +397,10 @@ void rtpAudio::initPacket(RTPPACKET &RTPpacket)
 	RTPpacket.RtpVPXCC = 128;
 	RTPpacket.RtpMPT = rtpMPT | rtpMarker;
 	rtpMarker = 0;
-	RTPpacket.RtpSequenceNumber = htons(txSequenceNumber);
+	//seq-numbers are handled by the base-class
+	//RTPpacket.RtpSequenceNumber = htons(txSequenceNumber);
+	
 	RTPpacket.RtpTimeStamp = htonl(txTimeStamp);
-	// as long as we are only doing one stream any hard
-	// coded value will do, they must be unique for each stream
-	//TODO how could this be true if this is the same value for audio and video?
-	RTPpacket.RtpSourceID = 0x666;
 }
 
 void rtpAudio::fillPacketwithSilence(RTPPACKET &RTPpacket)

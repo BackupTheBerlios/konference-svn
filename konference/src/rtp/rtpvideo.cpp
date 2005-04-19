@@ -54,9 +54,6 @@ void rtpVideo::initialise()
 {
 	rtpMPT = videoPayload;
 
-	txSequenceNumber      = 1; //udp packet sequence number
-	txTimeStamp	          = 0;
-
 	rxFirstFrame          = true;
 
 	rtpMarker = 0;
@@ -133,9 +130,6 @@ void rtpVideo::transmitQueuedVideo()
 
 		while (queuedLen > 0)
 		{
-			txSequenceNumber += 1; // Increment seq-num; don't increment timestamp
-			videoPacket.RtpSequenceNumber = htons(txSequenceNumber);
-
 			uint pkLen = queuedLen;
 			if (pkLen > H263SPACE)
 				pkLen = H263SPACE;

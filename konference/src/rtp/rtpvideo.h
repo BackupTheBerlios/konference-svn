@@ -89,8 +89,7 @@ protected:
 	rtpRxMode rxMode;
 
 	unsigned long txTimeStamp;
-	unsigned short txSequenceNumber;
-
+	
 	unsigned long rxTimestamp;
 	unsigned short rxSeqNum;
 
