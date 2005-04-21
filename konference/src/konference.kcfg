@@ -11,17 +11,24 @@
 
 	</group>
 <group name="audio">
-		<entry name="outputDevice" type="String">
+		<entry name="audioPlugin" type="Enum">
+		<label>Audio Plugin</label>
+		<choices>
+			<choice name="Arts"/>
+			<choice name="OSS"/>
+		</choices>
 		</entry>
-
-		<entry name="audioPlugin" type="String">
-		</entry>
-
+		
 		<entry name="outputMute" type="Bool">
 		<default>false</default>
 		</entry>
 
 		<entry name="inputDevice" type="String">
+		<default>/dev/dsp</default>
+		</entry>
+		
+		<entry name="outputDevice" type="String">
+		<default>/dev/dsp</default>
 		</entry>
 
 		<entry name="inputMute" type="Bool">

@@ -293,11 +293,9 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 		m_audioCodec = new g711ulaw();
 	}
 
-	//OSS
-	bool testsound=true;
-	//bool testsound=false;
-	if(!testsound)
+	if(KonferenceSettings::audioPlugin() == KonferenceSettings::EnumAudioPlugin::OSS)
 	{
+		kdDebug() << "using OSS driver" << endl;
 		m_audioDevice = new audioOSS();
 		//see if we are opening one or two devices
 		if(KonferenceSettings::inputDevice() == KonferenceSettings::outputDevice())
@@ -310,6 +308,7 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 	}
 	else
 	{
+		kdDebug() << "using Arts driver" << endl;
 		m_audioDevice = new audioArts();
 		m_audioDevice->openDevice("plughw:0,0");
 	}

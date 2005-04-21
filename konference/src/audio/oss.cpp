@@ -62,7 +62,12 @@ bool audioOSS::openDevice(QString device)
 	speakerFd = open(device, O_RDWR, 0);
 	microphoneFd = speakerFd;
 	if(speakerFd == -1)
+	if(speakerFd == -1)
+	{
+		kdDebug() << QString("audioOSS: Error opening device %1").arg(device) << endl;
 		return false;
+	}
+
 	setupAudioDevice(speakerFd);
 	return true;
 }
@@ -71,7 +76,10 @@ bool audioOSS::openSpeaker(QString device)
 {
 	speakerFd = open(device, O_WRONLY, 0);
 	if(speakerFd == -1)
+	{
+		kdDebug() << QString("audioOSS: Error opening speaker %1").arg(device) << endl;
 		return false;
+	}
 	setupAudioDevice(speakerFd);
 	return true;
 }
@@ -80,7 +88,11 @@ bool audioOSS::openMicrophone(QString device)
 {
 	microphoneFd = open(device, O_RDONLY, 0);
 	if(microphoneFd == -1)
+	{
+		kdDebug() << QString("audioOSS: Error opening microphone %1").arg(device) << endl;
 		return false;
+	}
+
 	setupAudioDevice(microphoneFd);
 	return true;
 }

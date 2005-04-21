@@ -393,7 +393,7 @@ bool rtpAudio::fillPacketfromMic(RTPPACKET &RTPpacket)
 	if (len != (int)(txPCMSamplesPerPacket*sizeof(short)))
 	{
 		fillPacketwithSilence(RTPpacket);
-		kdDebug() << "aua :" << len << endl;
+		//kdDebug() << "aua :" << len << endl;
 	}
 	else if (micMuted)
 		fillPacketwithSilence(RTPpacket);

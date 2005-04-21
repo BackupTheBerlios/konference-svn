@@ -58,7 +58,7 @@ void KonferenceWizard::accept()
 {
 	//we save our settings...
 	KonferenceSettings::setName(m_page2->m_nameEdit->text());
-	KonferenceSettings::setAudioPlugin(m_page2->m_audioPluginComboBox->currentText());
+	//KonferenceSettings::setAudioPlugin(m_page2->m_audioPluginComboBox->currentText());
 	KonferenceSettings::setInputDevice(m_page2->m_audioInputDeviceComboBox->currentText());
 	KonferenceSettings::setOutputDevice(m_page2->m_audioOutputDeviceComboBox->currentText());
 	KonferenceSettings::setVideoDevice(m_page2->m_videoComboBox->currentText());

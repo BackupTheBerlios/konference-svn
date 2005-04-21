@@ -20,6 +20,7 @@
 
 #include <qlistview.h>
 #include <qcombobox.h>
+#include <qlabel.h>
 
 #include <kdebug.h>
 
@@ -40,6 +41,22 @@ KonferenceConfigAudioDlg::KonferenceConfigAudioDlg( QWidget* parent, const char*
 	//kcfg_audioPlugin->insertStringList( KonferenceAudio::getPlugins() );
 	//kcfg_outputDevice->insertStringList( KonferenceAudio::getPlayerDevices("ALSA"));
 	//kcfg_inputDevice-> insertStringList( KonferenceAudio::getRecorderDevices("ALSA"));
+	
+	kdDebug() << "mooooooooooooh: " << kcfg_audioPlugin->currentText() << endl;
+	if(KonferenceSettings::audioPlugin() == KonferenceSettings::EnumAudioPlugin::OSS)
+	{
+		kcfg_outputDevice->setEnabled(true);
+		kcfg_inputDevice->setEnabled(true);
+		ossInputLabel->setEnabled(true);
+		ossOutputLabel->setEnabled(true);
+	}
+	else
+	{
+		kcfg_outputDevice->setEnabled(false);
+		kcfg_inputDevice->setEnabled(false);
+		ossInputLabel->setEnabled(false);
+		ossOutputLabel->setEnabled(false);
+	}
 }
 
 void KonferenceConfigAudioDlg::slotMoveUpButtonClicked()
@@ -74,9 +91,22 @@ KonferenceConfigAudioDlg::~KonferenceConfigAudioDlg()
 
 void KonferenceConfigAudioDlg::pluginChanged(const QString& plugin)
 {
-	kdDebug() << "KonferenceConfigAudioDlg::pluginChanged()" << endl;
-	kcfg_outputDevice->clear();
-	kcfg_inputDevice->clear();
+	kdDebug() << "KonferenceConfigAudioDlg::pluginChanged()" << plugin << endl;
+
+	if(plugin == "OSS")
+	{
+		kcfg_outputDevice->setEnabled(true);
+		kcfg_inputDevice->setEnabled(true);
+		ossInputLabel->setEnabled(true);
+		ossOutputLabel->setEnabled(true);
+	}
+	else
+	{
+		kcfg_outputDevice->setEnabled(false);
+		kcfg_inputDevice->setEnabled(false);
+		ossInputLabel->setEnabled(false);
+		ossOutputLabel->setEnabled(false);
+	}
 	//kcfg_outputDevice->insertStringList( KonferenceAudio::getPlayerDevices(plugin));
 	//kcfg_inputDevice->insertStringList(  KonferenceAudio::getRecorderDevices(plugin));
 }
