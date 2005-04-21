@@ -2,6 +2,6 @@ INCLUDES = -I$(top_srcdir)/src/dialogs -I$(top_srcdir)/src/dialogs/config 	-I$(t
 METASOURCES = AUTO
 
 noinst_LTLIBRARIES = libaudio.la
-noinst_HEADERS = audiobase.h alsa.h oss.h
-libaudio_la_SOURCES = audiobase.cpp alsa.cpp oss.cpp
-libaudio_la_LIBADD = -lasound
+noinst_HEADERS = audiobase.h alsa.h oss.h audioarts.h
+libaudio_la_SOURCES = audiobase.cpp alsa.cpp oss.cpp audioarts.cpp
+libaudio_la_LIBADD = -lartsc -lasound

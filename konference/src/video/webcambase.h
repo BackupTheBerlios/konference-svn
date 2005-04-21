@@ -76,6 +76,14 @@ private:
 
 
 /**
+ * @brief BaseClass for videoinput classes.
+ *
+ * This is the BaseClass for our "video drivers". It defines the interface
+ * and handles the interaction with the "clients".
+ * those "clients" register themself and get notifyed by an event that the images
+ * they requested are ready to be processed.
+ *
+ *
  * @author Malte Böhme
  */
 class WebcamBase : public QObject
@@ -113,14 +121,39 @@ public:
 	int  setClientFps(wcClient *client, int fps);
 	int  getActualFps();
 	
+	/**
+	 * If you have a cam that delivers pictures upside-down, set this to true in you subclass.
+	 */
 	void SetFlip(bool b) { wcFlip=b; }
 
+	/**
+	 * This should be called by the subclass when it has a new image/frame.
+	 * This function does all the format-conversion so that every client
+	 * gets his favourite format. It also sends notifications to the clients if there
+	 * is a new frame for them waiting.
+	 */
 	void ProcessFrame(unsigned char *frame, int fSize);
 
+	/**
+	 * This returns the pointer to the current frame for the specifyed client.
+	 */
 	unsigned char *GetVideoFrame(wcClient *client);
+	
+	/**
+	 * Removes the buffer from the buffer-list for that client.
+	 * Normally called after the buffer was fetched with @ref #GetVideoFrame()
+	 */
 	void FreeVideoBuffer(wcClient *client, unsigned char *buffer);
 
+	/**
+	 * Registers a client. You tell us what you want (format, fps and where you
+	 * want to receive the events) and webcamBase takes care of i.e. format-conversions
+	 */
 	wcClient *RegisterClient(int format, int fps, QObject *eventWin);
+	
+	/**
+	 * Remove a client from the list.
+	 */
 	void UnregisterClient(wcClient *client);
 	
 protected:

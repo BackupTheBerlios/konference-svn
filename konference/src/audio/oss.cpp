@@ -108,7 +108,6 @@ bool audioOSS::isMicrophoneData()
 
 bool audioOSS::isSpeakerHungry()
 {
-
 	int bytesQueued;
 	audio_buf_info info;
 	ioctl(speakerFd, SNDCTL_DSP_GETODELAY, &bytesQueued);

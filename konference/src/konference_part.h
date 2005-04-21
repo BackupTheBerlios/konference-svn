@@ -25,7 +25,6 @@
 #include <kparts/factory.h>
 
 class QWidget;
-class QPainter;
 
 class KAction;
 class KWidgetAction;
@@ -111,14 +110,20 @@ protected slots:
 	void addToHistory( const KURL &address );
 	
 private:
+	/**
+	 * This basically redirects the imag from the webcam to our display widget
+	 * It gets called when we receive an event that there is a new frame to display.
+	 */
 	void DrawLocalWebcamImage();
 	void TransmitLocalWebcamImage();
+	
 	void ProcessSipNotification();
 	void ProcessSipStateChange();
 	void ProcessRxVideoFrame();
 
 	uchar rxRgbBuffer[704*4*576];//max rgb-framesize
 	uchar yuvBuffer[800*576*3/2];//max yuv-framesize
+	
 	QWidget *m_parent;
 
 	/**
@@ -133,7 +138,14 @@ private:
 	 */
 	WebcamBase *m_webcam;
 
+	/**
+	 * Our audio codec that we are using.
+	 */
 	codecBase *m_audioCodec;
+	
+	/**
+	 * Our audio device that we want to use.
+	 */
 	audioBase *m_audioDevice;
 	
 	KHistoryCombo *m_location;

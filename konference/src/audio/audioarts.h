@@ -17,39 +17,37 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef AUDIOBASE_H
-#define AUDIOBASE_H
+#ifndef AUDIOARTS_H
+#define AUDIOARTS_H
 
-#include <qobject.h>
+#include <artsc/artsc.h>
+
+#include "audiobase.h"
 
 /**
- * @brief base class for audio handling
- *
- * This class is used as a base-class for all audio "drivers" such
- * as OSS or ALSA. This class implements nothing. It only describes the public interface
- * of the audio-handling-classes. 
- *
  * @author Malte Böhme
  */
-class audioBase : public QObject
+class audioArts : public audioBase
 {
-	Q_OBJECT
 public:
-	audioBase(QObject *parent = 0, const char *name = 0);
+	audioArts();
 
-	~audioBase();
-	virtual bool openDevice(QString device) = 0;
-	virtual bool openSpeaker(QString device) = 0;
-	virtual bool openMicrophone(QString device) = 0;
-	
-	virtual void closeDevice() = 0;
-	virtual void playFrame(uchar *frame, int len) = 0;
-	virtual int recordFrame(char *frame, int len) = 0;
-	
-	virtual bool isMicrophoneData() = 0;
-	virtual bool isSpeakerHungry() = 0;
+	~audioArts();
 
-	virtual void setSpkLowThreshold(int size) = 0;
+	virtual bool isMicrophoneData();
+	virtual bool isSpeakerHungry();
+	virtual bool openDevice(QString device);
+	virtual bool openMicrophone(QString device);
+	virtual bool openSpeaker(QString device);
+	virtual int recordFrame(char* frame, int len);
+	virtual void closeDevice();
+	virtual void playFrame(uchar* frame, int len);
+	virtual void setSpkLowThreshold(int size);
+private:
+	int packetsize;
+	arts_stream_t m_playerStream, m_recorderStream;
+	int size;
+	char *buffer;
 };
 
 #endif

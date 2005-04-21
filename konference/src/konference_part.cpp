@@ -47,6 +47,7 @@
 #include "sip/sipfsm.h"
 #include "audio/oss.h"
 #include "audio/alsa.h"
+#include "audio/audioarts.h"
 
 KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
                                 QObject *parent, const char *name )
@@ -293,18 +294,25 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 	}
 
 	//OSS
-	m_audioDevice = new audioOSS();
-	//see if we are opening one or two devices
-	if(KonferenceSettings::inputDevice() == KonferenceSettings::outputDevice())
-		m_audioDevice->openDevice(KonferenceSettings::inputDevice());
+	bool testsound=true;
+	//bool testsound=false;
+	if(!testsound)
+	{
+		m_audioDevice = new audioOSS();
+		//see if we are opening one or two devices
+		if(KonferenceSettings::inputDevice() == KonferenceSettings::outputDevice())
+			m_audioDevice->openDevice(KonferenceSettings::inputDevice());
+		else
+		{
+			m_audioDevice->openSpeaker(KonferenceSettings::inputDevice());
+			m_audioDevice->openMicrophone(KonferenceSettings::outputDevice());
+		}
+	}
 	else
 	{
-		m_audioDevice->openSpeaker(KonferenceSettings::inputDevice());
-		m_audioDevice->openMicrophone(KonferenceSettings::outputDevice());
+		m_audioDevice = new audioArts();
+		m_audioDevice->openDevice("plughw:0,0");
 	}
-
-	//m_audioDevice = new alsa();
-	//m_audioDevice->openDevice("plughw:0,0");
 
 	m_rtpAudio = new rtpAudio(this, KonferenceSettings::localAudioPort(), remoteIP,
 	                          remoteAudioPort, audioPayload, dtmfPayload,
