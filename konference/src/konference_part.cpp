@@ -45,6 +45,7 @@
 #include "codecs/g711.h"
 #include "codecs/h263.h"
 #include "sip/sipfsm.h"
+#include "audio/oss.h"
 
 KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
                                 QObject *parent, const char *name )
@@ -290,10 +291,12 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 		m_audioCodec = new g711ulaw();
 	}
 
-	m_rtpAudio = new rtpAudio((QWidget*)this, KonferenceSettings::localAudioPort(), remoteIP,
+	m_audioDevice = new audioOSS();
+	m_rtpAudio = new rtpAudio(this, KonferenceSettings::localAudioPort(), remoteIP,
 	                          remoteAudioPort, audioPayload, dtmfPayload,
 	                          KonferenceSettings::inputDevice(),
-							  KonferenceSettings::outputDevice(), m_audioCodec);
+							  KonferenceSettings::outputDevice(),
+							  m_audioCodec, m_audioDevice);
 
 kdDebug() << "dtmfpayload: " << dtmfPayload << endl;
 }
@@ -303,6 +306,10 @@ void KonferencePart::stopAudioRTP()
 	if(m_rtpAudio)
 		delete m_rtpAudio;
 	m_rtpAudio = 0;
+	
+	if(m_audioDevice)
+		delete m_audioDevice;
+	m_audioDevice = 0;
 }
 
 void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes)
@@ -336,7 +343,7 @@ void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int vi
 
 	h263->H263StartEncoder(m_webcam->width(), m_webcam->height(), 5);
 	h263->H263StartDecoder(w, h);
-	m_rtpVideo = new rtpVideo ((QObject*)this, KonferenceSettings::localVideoPort(), remoteIP,
+	m_rtpVideo = new rtpVideo (this, KonferenceSettings::localVideoPort(), remoteIP,
 								remoteVideoPort, videoPayload,RTP_TX_VIDEO, RTP_RX_VIDEO);
 }
 
@@ -379,8 +386,8 @@ void KonferencePart::TransmitLocalWebcamImage()
 {
 	unsigned char *yuvFrame = m_webcam->GetVideoFrame(m_txWebcamClient);
 	
-	int encLen;
-	if (/*yuvFrame != 0 && */m_rtpVideo)
+	int encLen=0;
+	if (yuvFrame != 0 && m_rtpVideo)
 	{
 		//TODO find better fix for odd quickcam resolutions
 		int txWidth = m_webcam->width();//176;
@@ -391,7 +398,8 @@ void KonferencePart::TransmitLocalWebcamImage()
 			scaleYuvImage(yuvFrame, m_webcam->width(), m_webcam->height(), txWidth, txHeight, yuvBuffer);
 
 		uchar *encFrame = h263->H263EncodeFrame(yuvBuffer, &encLen);
-		VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer(encLen);
+		//VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer(encLen);
+		VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer();
 		if (vb)
 		{
 			if (encLen > (int)sizeof(vb->video))
@@ -513,6 +521,8 @@ void KonferencePart::cancelClicked()
 }
 KonferencePart::~KonferencePart()
 {
+	if(m_webcam)
+		delete m_webcam;
 	if(sipStack)
 		delete sipStack;
 	if(m_rtpVideo)

@@ -22,6 +22,7 @@
 audioBase::audioBase(QObject *parent, const char *name)
  : QObject(parent, name)
 {
+	spkLowThreshold =0;//TODO
 }
 
 

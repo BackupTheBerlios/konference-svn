@@ -48,17 +48,17 @@ DTMF_RFC2833;
 
 
 #include "../codecs/codecbase.h"
-#include "../audio/oss.h"
+#include "../audio/audiobase.h"
 
 #include "jitter.h"
 
 #include "rtpbase.h"
 
-class rtpAudio : public rtpBase, audioOSS, QThread
+class rtpAudio : public rtpBase, QThread
 {
 
 public:
-	rtpAudio(QWidget *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, rtpTxMode txm=RTP_TX_AUDIO_FROM_MICROPHONE, rtpRxMode rxm=RTP_RX_AUDIO_TO_SPEAKER);
+	rtpAudio(QObject *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, audioBase *audioDevice, rtpTxMode txm=RTP_TX_AUDIO_FROM_MICROPHONE, rtpRxMode rxm=RTP_RX_AUDIO_TO_SPEAKER);
 	~rtpAudio();
 	virtual void run();
 
@@ -74,10 +74,10 @@ private:
 	void fillPacketwithSilence(RTPPACKET &RTPpacket);
 	bool fillPacketfromMic(RTPPACKET &RTPpacket);
 	void fillPacketfromBuffer(RTPPACKET &RTPpacket);
-	
 
-	short		SpkBuffer[1][SPK_BUFFER_SIZE];
-	int			spkInBuffer;
+
+	short spkBuffer[1][SPK_BUFFER_SIZE];
+	int spkInBuffer;
 
 	QObject *eventWindow;
 	codecBase   *m_codec;
@@ -87,15 +87,15 @@ private:
 	int rxPCMSamplesPerPacket;
 	int txPCMSamplesPerPacket;
 	int SpkJitter;
-	
+
 	QString micDevice;
 	QString spkDevice;
-	
+
 	ulong rxTimestamp;
 	ushort rxSeqNum;
 	bool rxFirstFrame;
-unsigned long txTimeStamp;
-	
+	unsigned long txTimeStamp;
+
 	int PlayoutDelay;
 	short SilenceBuffer[MAX_DECOMP_AUDIO_SAMPLES];
 	int PlayLen;
@@ -104,7 +104,7 @@ unsigned long txTimeStamp;
 	uchar rtpMarker;
 	rtpTxMode txMode;
 	rtpRxMode rxMode;
-	
+
 	bool oobError;
 	bool killRtpThread;
 	short *txBuffer;
@@ -113,11 +113,14 @@ unsigned long txTimeStamp;
 	QString dtmfIn;
 	short *recBuffer;
 	int recBufferLen, recBufferMaxLen;
-	
+
 	///this may be set to 'true' anytime to transmit silence instead of mic-data (speech)
 	bool micMuted;
 
 	int audioPayload,dtmfPayload;
+	
+	audioBase *m_audioDevice;
+	
 	//this is used by the encode/decode functions of the codecs and stores the power-lvl in this frame
 	//used for statistics/powermeter
 	short spkPower2;

@@ -20,33 +20,42 @@
 #ifndef OSS_H
 #define OSS_H
 
-//#include "../rtp/jitter.h"
+#include "audiobase.h"
 #include <qstring.h>
 
 /**
  * @author Malte Böhme
  */
-class audioOSS
+class audioOSS : public audioBase
 {
 public:
 	audioOSS();
 	~audioOSS();
+	
+	bool openDevice(QString device);
+	bool openSpeaker(QString device);
+	bool openMicrophone(QString device);
+	
 	bool setupAudioDevice(int fd);
 	/**
 	 * closes the device(s) opened in @ref #OpenAudioDevice()
 	 */
 	void closeDevice();
 
+	void playFrame(uchar *frame, int len);
+	int recordFrame(char *frame, int len);
+	
 	bool isMicrophoneData();
 	bool isSpeakerHungry();
 
-protected:
+	void setSpkLowThreshold(int size){spkLowThreshold = size;};
+
+private:
+int spkLowThreshold;
+	bool spkSeenData;
+	int spkUnderrunCount;
 	int speakerFd;
 	int microphoneFd;
-bool spkSeenData;
-	int spkLowThreshold;
-	int spkUnderrunCount;
-	
 };
 
 #endif

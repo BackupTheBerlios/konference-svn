@@ -34,8 +34,6 @@
 #define RTP_PAYLOAD_GSM			0x03
 #define PAYLOAD(r)				(((r)->RtpMPT) & (~RTP_PAYLOAD_MARKER_BIT))
 
-#define RTP_STATS_INTERVAL        1 // Seconds between sending statistics
-
 #include "jitter.h"
 
 enum rtpTxMode

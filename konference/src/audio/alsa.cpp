@@ -22,7 +22,7 @@
 alsa::alsa()
  : audioBase()
 {
-	m_isOpen = false;
+
 }
 
 bool alsa::openDevice()

@@ -32,14 +32,21 @@ public:
 	audioBase(QObject *parent = 0, const char *name = 0);
 
 	~audioBase();
-	bool isOpen(){return m_isOpen;};
-	virtual bool openDevice() = 0;
-	virtual bool closeDevice() = 0;
-	virtual bool writeBuffer( void ) = 0;
-	virtual bool readBuffer( int bytes = 0 ) = 0;
+	virtual bool openDevice(QString device) = 0;
+	virtual bool openSpeaker(QString device) = 0;
+	virtual bool openMicrophone(QString device) = 0;
 	
-protected:
-	bool m_isOpen;
+	virtual void closeDevice() = 0;
+	virtual void playFrame(uchar *frame, int len) = 0;
+	virtual int recordFrame(char *frame, int len) = 0;
+	
+	virtual bool isMicrophoneData() = 0;
+	virtual bool isSpeakerHungry() = 0;
+
+	virtual void setSpkLowThreshold(int size){spkLowThreshold = size;};
+	
+private:
+	int spkLowThreshold;
 };
 
 #endif
