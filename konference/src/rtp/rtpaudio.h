@@ -12,24 +12,17 @@
 #define IP_MTU                    1290     // Max size of txed RTP packet. Standard MTU is 1500, leave some room for IPSec etc
 #define TX_USER_STREAM_SIZE       4096
 #define MINBYTESIZE               80
-#define RTP_HEADER_SIZE           12
-#define UDP_HEADER_SIZE           28
 #define	MESSAGE_SIZE              80       // bytes to send per 10ms
 #define	ULAW_BYTES_PER_MS         8        // bytes to send per 1ms
 #define MAX_COMP_AUDIO_SIZE       320      // This would equate to 40ms sample size
 #define MAX_DECOMP_AUDIO_SAMPLES  (MAX_COMP_AUDIO_SIZE) // CHANGE FOR HIGHER COMPRESSION CODECS; G.711 has same no. samples after decomp.
 #define PCM_SAMPLES_PER_MS        8
 
-// WIN32 driver constants
+
 #define NUM_MIC_BUFFERS		16
 #define MIC_BUFFER_SIZE		MAX_DECOMP_AUDIO_SAMPLES
 #define NUM_SPK_BUFFERS		16
 #define SPK_BUFFER_SIZE		MIC_BUFFER_SIZE // Need to keep these the same (see RTPPACKET)
-
-class rtp;
-
-#include "rtpevent.h"
-#include "rtpvideo.h"
 
 typedef struct
 {

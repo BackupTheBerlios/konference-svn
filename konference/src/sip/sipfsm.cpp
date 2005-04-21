@@ -35,20 +35,20 @@
 #ifndef WIN32
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <pthread.h>
+//#include <pthread.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <net/if.h>
-#include <linux/sockios.h>
-#include <linux/videodev.h>
+//#include <linux/sockios.h>
+//#include <linux/videodev.h>
 //#include <mythtv/mythcontext.h>
 #include "config.h"
 #endif
 
-#ifdef WIN32
-#include <winsock2.h>
-#include "gcontext.h"
-#endif
+//#ifdef WIN32
+//#include <winsock2.h>
+//#include "gcontext.h"
+//#endif
 
 using namespace std;
 
@@ -279,7 +279,6 @@ void SipThread::SipThreadWorker()
 {
 	FrontEndActive = false;
 	rnaTimer = -1;
-	Rtp = 0;
 	// Open a file for writing debug info into
 	char *homeDir = getenv("HOME");
 	QString debugFileName = QString(homeDir) + "/.mythtv/MythPhone/siplog.txt";

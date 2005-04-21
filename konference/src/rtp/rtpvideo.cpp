@@ -355,7 +355,7 @@ void rtpVideo::StreamInVideo()
 						kdDebug() << "Discarding frame, app consuming too slowly" << endl;
 					}
 					if (m_parent)
-						QApplication::postEvent(m_parent, new RtpEvent(RtpEvent::RxVideoFrame));
+						QApplication::postEvent(m_parent, new rtpVideoEvent(rtpVideoEvent::newFrame));
 					picture = 0;
 				}
 				else

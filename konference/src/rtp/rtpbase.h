@@ -36,8 +36,6 @@
 
 #define RTP_STATS_INTERVAL        1 // Seconds between sending statistics
 
-//#include "../codecs/codecbase.h"
-#include "rtpevent.h"
 #include "jitter.h"
 
 enum rtpTxMode

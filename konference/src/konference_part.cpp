@@ -134,9 +134,8 @@ void KonferencePart::customEvent(QCustomEvent *event)
 		}
 		break;
 
-	case RtpEvent::RxVideoFrame:
+	case rtpVideoEvent::newFrame:
 		{
-			//kdDebug() << "KonferencePart::customEvent: type=RtpEvent::RxVideoFrame" << endl;
 			ProcessRxVideoFrame();
 		}
 		break;

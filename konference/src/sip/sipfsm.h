@@ -34,10 +34,8 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-#include <linux/videodev.h>
 
 #include "sipstack.h"
-#include "../rtp/rtpbase.h"
 
 class SipEvent : public QCustomEvent
 {
@@ -310,7 +308,6 @@ private:
 	SipContainer *sipContainer;
 	bool FrontEndActive;
 
-	rtp *Rtp;
 	int CallState;
 	QString callerUser, callerName, callerUrl;
 	bool inAudioOnly;

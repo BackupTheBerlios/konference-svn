@@ -21,6 +21,7 @@
 #define RTPVIDEO_H
 
 #include <qptrlist.h>
+#include <qevent.h>
 
 #include "rtpbase.h"
 
@@ -54,6 +55,12 @@ typedef struct VIDEOBUFFER
 }
 VIDEOBUFFER;
 
+class rtpVideoEvent : public QCustomEvent
+{
+public:
+    enum type { newFrame = (QEvent::User + 300)};
+    rtpVideoEvent(type t) : QCustomEvent(t) {}
+};
 
 /**
 @author Malte Böhme
