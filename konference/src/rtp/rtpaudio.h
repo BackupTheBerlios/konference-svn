@@ -58,14 +58,13 @@ class rtpAudio : public rtpBase, QThread
 {
 
 public:
-	rtpAudio(QObject *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, audioBase *audioDevice, rtpTxMode txm=RTP_TX_AUDIO_FROM_MICROPHONE, rtpRxMode rxm=RTP_RX_AUDIO_TO_SPEAKER);
+	rtpAudio(QObject *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, codecBase *codec, audioBase *audioDevice);
 	~rtpAudio();
 	virtual void run();
 
 private:
 	void rtpAudioThreadWorker();
 	void rtpInitialise();
-	bool setupAudio();
 	void StreamInAudio();
 	void PlayOutAudio();
 	void HandleRxDTMF(RTPPACKET *RTPpacket);
@@ -87,9 +86,6 @@ private:
 	int rxPCMSamplesPerPacket;
 	int txPCMSamplesPerPacket;
 	int SpkJitter;
-
-	QString micDevice;
-	QString spkDevice;
 
 	ulong rxTimestamp;
 	ushort rxSeqNum;

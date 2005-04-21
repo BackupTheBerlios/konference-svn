@@ -43,10 +43,7 @@ public:
 	virtual bool isMicrophoneData() = 0;
 	virtual bool isSpeakerHungry() = 0;
 
-	virtual void setSpkLowThreshold(int size){spkLowThreshold = size;};
-	
-private:
-	int spkLowThreshold;
+	virtual void setSpkLowThreshold(int size) = 0;
 };
 
 #endif

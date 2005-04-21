@@ -24,16 +24,16 @@
 #include "../codecs/gsmcodec.h"
 
 
-rtpAudio::rtpAudio(QObject *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, QString micDev, QString spkDev, codecBase *codec, audioBase *audioDevice, rtpTxMode txm, rtpRxMode rxm)
+rtpAudio::rtpAudio(QObject *callingApp, int localPort, QString remoteIP, int remotePort,
+				 int mediaPay, int dtmfPay, codecBase *codec, audioBase *audioDevice)
 		: rtpBase(remoteIP, localPort, remotePort)
 {
 	eventWindow = callingApp;
 	m_audioDevice = audioDevice;
 	
-	txMode = txm;
-	rxMode = rxm;
-	micDevice = micDev;
-	spkDevice = spkDev;
+	txMode = RTP_TX_AUDIO_FROM_MICROPHONE;
+	rxMode = RTP_RX_AUDIO_TO_SPEAKER;
+	//txMode = RTP_TX_AUDIO_SILENCE;
 	m_codec = codec;
 
 	audioPayload = mediaPay;
@@ -79,8 +79,6 @@ void rtpAudio::rtpAudioThreadWorker()
 	rxTimestamp = 0;
 	rxSeqNum = 0;
 	rxFirstFrame = true;
-
-	setupAudio();
 
 	timeNextTx = (QTime::currentTime()).addMSecs(rxMsPacketSize);
 
@@ -172,37 +170,6 @@ void rtpAudio::rtpInitialise()
 
 	rtpMPT = m_codec->getPayload();
 	rtpMarker = 0;
-}
-
-
-bool rtpAudio::setupAudio()
-{
-	bool error = false;
-	//we use the same device for read and write
-	if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER) &&
-	        (txMode == RTP_TX_AUDIO_FROM_MICROPHONE) &&
-	        (spkDevice == micDevice))
-	{
-		error = !m_audioDevice->openDevice(spkDevice);
-	}
-	//we dont..
-	else
-	{
-		if (rxMode == RTP_RX_AUDIO_TO_SPEAKER)
-			error = !m_audioDevice->openSpeaker(spkDevice);
-
-		if ((txMode == RTP_TX_AUDIO_FROM_MICROPHONE))
-			error = !m_audioDevice->openMicrophone(micDevice);
-	}
-
-	if (error)
-	{
-		kdDebug() << "Cannot open sound." << endl;
-		kdDebug() << "spkDevice=" << spkDevice << endl;
-		kdDebug() << "micDevice=" << micDevice << endl;
-		return false;
-	}
-	return true;
 }
 
 void rtpAudio::StreamInAudio()

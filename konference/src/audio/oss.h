@@ -36,7 +36,6 @@ public:
 	bool openSpeaker(QString device);
 	bool openMicrophone(QString device);
 	
-	bool setupAudioDevice(int fd);
 	/**
 	 * closes the device(s) opened in @ref #OpenAudioDevice()
 	 */
@@ -51,6 +50,7 @@ public:
 	void setSpkLowThreshold(int size){spkLowThreshold = size;};
 
 private:
+bool setupAudioDevice(int fd);
 int spkLowThreshold;
 	bool spkSeenData;
 	int spkUnderrunCount;

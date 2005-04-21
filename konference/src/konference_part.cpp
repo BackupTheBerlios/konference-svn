@@ -46,6 +46,7 @@
 #include "codecs/h263.h"
 #include "sip/sipfsm.h"
 #include "audio/oss.h"
+#include "audio/alsa.h"
 
 KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
                                 QObject *parent, const char *name )
@@ -55,7 +56,7 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 
 	//"i dont want to be marked unuseb by the compiler", says widgetName...
 	if(widgetName){/* if true, do nothing :) */}
-	
+
 	// we need an instance
 	setInstance( KonferencePartFactory::instance() );
 
@@ -70,7 +71,7 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 		m_webcam = new WebcamV4L();
 	else
 		m_webcam = new WebcamImage();
-	
+
 	int resolutionShift = KonferenceSettings::videoSize();
 	//we shift the 4cif resolution by the index of our combobox
 	//since they are ordered and always multiplied by 2 we can do this quite easily
@@ -89,15 +90,15 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	if(!m_webcam->camOpen(KonferenceSettings::videoDevice(), w, h))
 		KMessageBox::error(0,QString("error opening the webcam. expect things to crash...").arg(KonferenceSettings::videoDevice()));
 	//TODO add fallback if camOpen() fails above
-	
+
 	//lets see if the webcam opened at the desired size.
 	if(m_webcam->width() != w || m_webcam->height() != h)
 		KMessageBox::error(0,QString("webcam opened at %1x%2 instead of the requested %3x%4").arg(m_webcam->width()).arg(m_webcam->height()).arg(w).arg(h));
-	
+
 	//register webcam-clients and tell the webcam module to send the events to "this"
 	m_localWebcamClient = m_webcam->RegisterClient(PIX_FMT_RGBA32, 20/*fps*/, this);
 
-	
+
 	// notify the part that this is our internal widget
 	setWidget(m_widget);
 
@@ -291,14 +292,25 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 		m_audioCodec = new g711ulaw();
 	}
 
+	//OSS
 	m_audioDevice = new audioOSS();
+	//see if we are opening one or two devices
+	if(KonferenceSettings::inputDevice() == KonferenceSettings::outputDevice())
+		m_audioDevice->openDevice(KonferenceSettings::inputDevice());
+	else
+	{
+		m_audioDevice->openSpeaker(KonferenceSettings::inputDevice());
+		m_audioDevice->openMicrophone(KonferenceSettings::outputDevice());
+	}
+
+	//m_audioDevice = new alsa();
+	//m_audioDevice->openDevice("plughw:0,0");
+
 	m_rtpAudio = new rtpAudio(this, KonferenceSettings::localAudioPort(), remoteIP,
 	                          remoteAudioPort, audioPayload, dtmfPayload,
-	                          KonferenceSettings::inputDevice(),
-							  KonferenceSettings::outputDevice(),
-							  m_audioCodec, m_audioDevice);
+	                          m_audioCodec, m_audioDevice);
 
-kdDebug() << "dtmfpayload: " << dtmfPayload << endl;
+	//kdDebug() << "dtmfpayload: " << dtmfPayload << endl;
 }
 
 void KonferencePart::stopAudioRTP()
@@ -306,7 +318,8 @@ void KonferencePart::stopAudioRTP()
 	if(m_rtpAudio)
 		delete m_rtpAudio;
 	m_rtpAudio = 0;
-	
+
+	//since we call the dtor it closes the devices itself
 	if(m_audioDevice)
 		delete m_audioDevice;
 	m_audioDevice = 0;
@@ -344,7 +357,7 @@ void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int vi
 	h263->H263StartEncoder(m_webcam->width(), m_webcam->height(), 5);
 	h263->H263StartDecoder(w, h);
 	m_rtpVideo = new rtpVideo (this, KonferenceSettings::localVideoPort(), remoteIP,
-								remoteVideoPort, videoPayload,RTP_TX_VIDEO, RTP_RX_VIDEO);
+	                           remoteVideoPort, videoPayload,RTP_TX_VIDEO, RTP_RX_VIDEO);
 }
 
 void KonferencePart::stopVideoRTP()
@@ -385,7 +398,7 @@ void KonferencePart::ProcessRxVideoFrame()
 void KonferencePart::TransmitLocalWebcamImage()
 {
 	unsigned char *yuvFrame = m_webcam->GetVideoFrame(m_txWebcamClient);
-	
+
 	int encLen=0;
 	if (yuvFrame != 0 && m_rtpVideo)
 	{
@@ -427,7 +440,7 @@ void KonferencePart::TransmitLocalWebcamImage()
 void KonferencePart::DrawLocalWebcamImage()
 {
 	unsigned char *rgb32Frame = m_webcam->GetVideoFrame(m_localWebcamClient);
-	
+
 	QImage image(rgb32Frame, m_webcam->width(), m_webcam->height(), 32, (QRgb *)0, 0, QImage::LittleEndian);
 	KonferenceNewImageEvent* ce = new KonferenceNewImageEvent( image, KonferenceNewImageEvent::LOCAL );
 	QApplication::postEvent( m_widget, ce );  // Qt will delete the event when done-

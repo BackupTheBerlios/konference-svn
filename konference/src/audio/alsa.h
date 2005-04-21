@@ -20,22 +20,40 @@
 #ifndef ALSA_H
 #define ALSA_H
 #include <alsa/asoundlib.h>
-#include <audiobase.h>
+#include "audiobase.h"
 
 /**
-@author Malte B?me
-*/
+ * @author Malte Böhme
+ */
 class alsa : public audioBase
 {
 public:
     alsa();
 
     ~alsa();
+	bool openDevice(QString device);
+	bool openSpeaker(QString device){return true;};
+	bool openMicrophone(QString device){return true;};
+	
+	/**
+	 * closes the device(s) opened in @ref #OpenAudioDevice()
+	 */
+	void closeDevice();
 
-	bool openDevice();
-	bool writeBuffer( void );
-	//unsigned int readableBytes( void );
-	bool readBuffer( int bytes );
+	void playFrame(uchar *frame, int len);
+	int recordFrame(char *frame, int len){return 0;};
+	
+	bool isMicrophoneData(){return true;};
+	bool isSpeakerHungry(){return true;};
+	void setSpkLowThreshold(int size){spkLowThreshold = size;};
+	
+private:
+	int spkLowThreshold;
+	
+	snd_pcm_t *handle;
+	snd_pcm_hw_params_t *hw_params;
+	snd_pcm_uframes_t buffer_size;
+
 };
 
 #endif

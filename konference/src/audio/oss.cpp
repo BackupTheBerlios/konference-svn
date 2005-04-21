@@ -34,12 +34,13 @@ audioOSS::audioOSS() : audioBase()
 	speakerFd = -1;
 	microphoneFd = -1;
 	spkSeenData = false;
-	spkUnderrunCount = 0;	
+	spkUnderrunCount = 0;
+	spkLowThreshold = 0;
 }
 
 audioOSS::~audioOSS()
 {
-	//closeDevice();
+	closeDevice();
 }
 
 void audioOSS::playFrame(uchar *frame, int len)

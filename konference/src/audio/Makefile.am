@@ -4,3 +4,4 @@ METASOURCES = AUTO
 noinst_LTLIBRARIES = libaudio.la
 noinst_HEADERS = audiobase.h alsa.h oss.h
 libaudio_la_SOURCES = audiobase.cpp alsa.cpp oss.cpp
+libaudio_la_LIBADD = -lasound
