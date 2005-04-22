@@ -383,5 +383,6 @@ WebcamV4L::~WebcamV4L()
 {
 	if (hDev > 0)
 		camClose();
+	KillThread();
 }
 

@@ -126,12 +126,12 @@ void WebcamImage::WebcamThreadWorker()
 {
 	while(!killWebcamThread)
 	{
-		m_picbuffMutex.lock();
 		ProcessFrame(m_picbuff, frameSize);
-		m_picbuffMutex.unlock();
 		msleep(200); //sleep a bit (1sec)
 	}
 }
 
 WebcamImage::~WebcamImage()
-{}
+{
+	KillThread();
+}
