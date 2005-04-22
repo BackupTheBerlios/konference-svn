@@ -1,0 +1,15 @@
+* initial checkin.
+* new project-page @ http://developer.berlios.de/projects/konference/
+* redesigned config-dlg (uses now ui-files)
+* (2004/02/10) added support for transmitting images instead of video (in case no video is available)
+* (2004/02/10) minor updates such as msg-boxes on errors, improved config-dialog, user can select priorities of audio-codecs ... etc
+* (2004/02/15) added h263 support + minor fixes
+* (2004/03/03) now using KConfigXT (breaking compat with KDE < 3.2.0)
+* (2004/03/03) first attempt of a config-wizard
+* (2004/09/03) have been a while, but here is a new "stable" development-snapshot, changes are too numerous to be all mentioned here...
+* (2004/09/05) added comanndline-option to directly call a user, added dcop-interface.
+* (2004/09/05) kopete cvs has now an option to use konference for msn-video-chat!
+* (2005/01/25) comitted rewrite of konference. it doesnt depend on openh323 anymore, as it uses an own sip-stack! so no compat with gnomemeeting/netmeeting anymore. This release should be considered a first "hack". it isnt quite useful yet.
+* (2005/4/15) Bid step forward to a releaseable version. There are too many things that changed to list them all (or even remember ;). This snapshot named 0.1alpha1 is not only for developers but also for users that arent afraid of alpha-quality software :)
+* (2005/4/21) Added support for transmitting an image instead of video, added support for Arts
+              I refacored (almost rewritten) the rtp-stack (audio and video) to be more extensible.
