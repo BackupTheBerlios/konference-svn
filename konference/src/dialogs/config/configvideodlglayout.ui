@@ -44,6 +44,9 @@
                         <property name="text">
                             <string>Enable video reception by default</string>
                         </property>
+                        <property name="checked">
+                            <bool>true</bool>
+                        </property>
                     </widget>
                     <widget class="QCheckBox" row="3" column="0">
                         <property name="name">
@@ -54,6 +57,9 @@
                         </property>
                         <property name="text">
                             <string>Enable video transmission by default</string>
+                        </property>
+                        <property name="checked">
+                            <bool>true</bool>
                         </property>
                     </widget>
                     <widget class="QGroupBox" row="1" column="0">
@@ -112,7 +118,7 @@
                                             <cstring>kcfg_fakeDeviceImage</cstring>
                                         </property>
                                         <property name="enabled">
-                                            <bool>false</bool>
+                                            <bool>true</bool>
                                         </property>
                                         <property name="text">
                                             <string></string>
@@ -123,7 +129,7 @@
                                             <cstring>m_selectImageButton</cstring>
                                         </property>
                                         <property name="enabled">
-                                            <bool>false</bool>
+                                            <bool>true</bool>
                                         </property>
                                         <property name="text">
                                             <string>Browse...</string>
@@ -136,7 +142,7 @@
                                     <cstring>textLabel3_3</cstring>
                                 </property>
                                 <property name="enabled">
-                                    <bool>false</bool>
+                                    <bool>true</bool>
                                 </property>
                                 <property name="text">
                                     <string>Choose the image to be transmitted...
@@ -217,70 +223,7 @@ you know, i love designing GUIs :P</string>
                     <property name="name">
                         <cstring>unnamed</cstring>
                     </property>
-                    <widget class="QGroupBox" row="0" column="0">
-                        <property name="name">
-                            <cstring>groupBox1</cstring>
-                        </property>
-                        <property name="enabled">
-                            <bool>true</bool>
-                        </property>
-                        <property name="title">
-                            <string>Device Options</string>
-                        </property>
-                        <widget class="QLabel">
-                            <property name="name">
-                                <cstring>textLabel2_2</cstring>
-                            </property>
-                            <property name="enabled">
-                                <bool>true</bool>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>11</x>
-                                    <y>49</y>
-                                    <width>151</width>
-                                    <height>16</height>
-                                </rect>
-                            </property>
-                            <property name="text">
-                                <string>Video size:</string>
-                            </property>
-                        </widget>
-                        <widget class="QComboBox">
-                            <item>
-                                <property name="text">
-                                    <string>4CIF (704x576)</string>
-                                </property>
-                            </item>
-                            <item>
-                                <property name="text">
-                                    <string>CIF (352x288)</string>
-                                </property>
-                            </item>
-                            <item>
-                                <property name="text">
-                                    <string>QCIF (176x144)</string>
-                                </property>
-                            </item>
-                            <item>
-                                <property name="text">
-                                    <string>SQCIF (128x96)</string>
-                                </property>
-                            </item>
-                            <property name="name">
-                                <cstring>kcfg_videoSize</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>168</x>
-                                    <y>49</y>
-                                    <width>150</width>
-                                    <height>22</height>
-                                </rect>
-                            </property>
-                        </widget>
-                    </widget>
-                    <widget class="QGroupBox" row="1" column="0">
+                    <widget class="QGroupBox" row="1" column="0" rowspan="1" colspan="2">
                         <property name="name">
                             <cstring>groupBox2</cstring>
                         </property>
@@ -290,219 +233,378 @@ you know, i love designing GUIs :P</string>
                         <property name="title">
                             <string>Video Settings</string>
                         </property>
-                        <grid>
+                        <widget class="QLabel">
                             <property name="name">
-                                <cstring>unnamed</cstring>
+                                <cstring>textLabel8_6</cstring>
                             </property>
-                            <widget class="QLabel" row="0" column="1">
-                                <property name="name">
-                                    <cstring>textLabel8_6</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Low</string>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="4" column="3">
-                                <property name="name">
-                                    <cstring>textLabel8_2_5_5</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>High</string>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="2" column="1">
-                                <property name="name">
-                                    <cstring>textLabel8_3</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Low</string>
-                                </property>
-                            </widget>
-                            <widget class="QSlider" row="4" column="2">
-                                <property name="name">
-                                    <cstring>kcfg_hue</cstring>
-                                </property>
-                                <property name="maxValue">
-                                    <number>65535</number>
-                                </property>
-                                <property name="lineStep">
-                                    <number>100</number>
-                                </property>
-                                <property name="pageStep">
-                                    <number>10000</number>
-                                </property>
-                                <property name="value">
-                                    <number>30000</number>
-                                </property>
-                                <property name="orientation">
-                                    <enum>Horizontal</enum>
-                                </property>
-                                <property name="tickmarks">
-                                    <enum>Below</enum>
-                                </property>
-                            </widget>
-                            <widget class="QSlider" row="2" column="2">
-                                <property name="name">
-                                    <cstring>kcfg_color</cstring>
-                                </property>
-                                <property name="maxValue">
-                                    <number>65535</number>
-                                </property>
-                                <property name="lineStep">
-                                    <number>10</number>
-                                </property>
-                                <property name="pageStep">
-                                    <number>10000</number>
-                                </property>
-                                <property name="value">
-                                    <number>30000</number>
-                                </property>
-                                <property name="orientation">
-                                    <enum>Horizontal</enum>
-                                </property>
-                                <property name="tickmarks">
-                                    <enum>Below</enum>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="4" column="0">
-                                <property name="name">
-                                    <cstring>textLabel1_3</cstring>
-                                </property>
-                                <property name="font">
-                                    <font>
-                                        <bold>1</bold>
-                                    </font>
-                                </property>
-                                <property name="text">
-                                    <string>Hue:</string>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="3" column="3">
-                                <property name="name">
-                                    <cstring>textLabel8_2_5_4</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>High</string>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="3" column="0">
-                                <property name="name">
-                                    <cstring>textLabel1_5</cstring>
-                                </property>
-                                <property name="font">
-                                    <font>
-                                        <bold>1</bold>
-                                    </font>
-                                </property>
-                                <property name="text">
-                                    <string>Contrast:</string>
-                                </property>
-                            </widget>
-                            <widget class="QSlider" row="3" column="2">
-                                <property name="name">
-                                    <cstring>kcfg_contrast</cstring>
-                                </property>
-                                <property name="minValue">
-                                    <number>0</number>
-                                </property>
-                                <property name="maxValue">
-                                    <number>65535</number>
-                                </property>
-                                <property name="lineStep">
-                                    <number>10</number>
-                                </property>
-                                <property name="pageStep">
-                                    <number>10000</number>
-                                </property>
-                                <property name="orientation">
-                                    <enum>Horizontal</enum>
-                                </property>
-                                <property name="tickmarks">
-                                    <enum>Below</enum>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="2" column="0">
-                                <property name="name">
-                                    <cstring>textLabel1_4</cstring>
-                                </property>
-                                <property name="font">
-                                    <font>
-                                        <bold>1</bold>
-                                    </font>
-                                </property>
-                                <property name="text">
-                                    <string>Color:</string>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="4" column="1">
-                                <property name="name">
-                                    <cstring>textLabel8_5</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Low</string>
-                                </property>
-                            </widget>
-                            <widget class="QSlider" row="0" column="2">
-                                <property name="name">
-                                    <cstring>kcfg_brightness</cstring>
-                                </property>
-                                <property name="maxValue">
-                                    <number>65535</number>
-                                </property>
-                                <property name="lineStep">
-                                    <number>10</number>
-                                </property>
-                                <property name="pageStep">
-                                    <number>10000</number>
-                                </property>
-                                <property name="value">
-                                    <number>30000</number>
-                                </property>
-                                <property name="orientation">
-                                    <enum>Horizontal</enum>
-                                </property>
-                                <property name="tickmarks">
-                                    <enum>Below</enum>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="0" column="0">
-                                <property name="name">
-                                    <cstring>textLabel1_6</cstring>
-                                </property>
-                                <property name="font">
-                                    <font>
-                                        <bold>1</bold>
-                                    </font>
-                                </property>
-                                <property name="text">
-                                    <string>Brightness:</string>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="3" column="1">
-                                <property name="name">
-                                    <cstring>textLabel8_4</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Low</string>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="2" column="3">
-                                <property name="name">
-                                    <cstring>textLabel8_2_5_3</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>High</string>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="0" column="3">
-                                <property name="name">
-                                    <cstring>textLabel8_2_5</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>High</string>
-                                </property>
-                            </widget>
-                        </grid>
+                            <property name="geometry">
+                                <rect>
+                                    <x>85</x>
+                                    <y>29</y>
+                                    <width>25</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="text">
+                                <string>Low</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel8_2_5_5</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>290</x>
+                                    <y>134</y>
+                                    <width>28</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="text">
+                                <string>High</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel8_3</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>85</x>
+                                    <y>64</y>
+                                    <width>25</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="text">
+                                <string>Low</string>
+                            </property>
+                        </widget>
+                        <widget class="QSlider">
+                            <property name="name">
+                                <cstring>kcfg_hue</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>116</x>
+                                    <y>134</y>
+                                    <width>168</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="maxValue">
+                                <number>65535</number>
+                            </property>
+                            <property name="lineStep">
+                                <number>100</number>
+                            </property>
+                            <property name="pageStep">
+                                <number>10000</number>
+                            </property>
+                            <property name="value">
+                                <number>30000</number>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="tickmarks">
+                                <enum>Below</enum>
+                            </property>
+                        </widget>
+                        <widget class="QSlider">
+                            <property name="name">
+                                <cstring>kcfg_color</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>116</x>
+                                    <y>64</y>
+                                    <width>168</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="maxValue">
+                                <number>65535</number>
+                            </property>
+                            <property name="lineStep">
+                                <number>10</number>
+                            </property>
+                            <property name="pageStep">
+                                <number>10000</number>
+                            </property>
+                            <property name="value">
+                                <number>30000</number>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="tickmarks">
+                                <enum>Below</enum>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel1_3</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>11</x>
+                                    <y>134</y>
+                                    <width>68</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="font">
+                                <font>
+                                    <bold>1</bold>
+                                </font>
+                            </property>
+                            <property name="text">
+                                <string>Hue:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel8_2_5_4</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>290</x>
+                                    <y>99</y>
+                                    <width>28</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="text">
+                                <string>High</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel1_5</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>11</x>
+                                    <y>99</y>
+                                    <width>68</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="font">
+                                <font>
+                                    <bold>1</bold>
+                                </font>
+                            </property>
+                            <property name="text">
+                                <string>Contrast:</string>
+                            </property>
+                        </widget>
+                        <widget class="QSlider">
+                            <property name="name">
+                                <cstring>kcfg_contrast</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>116</x>
+                                    <y>99</y>
+                                    <width>168</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="minValue">
+                                <number>0</number>
+                            </property>
+                            <property name="maxValue">
+                                <number>65535</number>
+                            </property>
+                            <property name="lineStep">
+                                <number>10</number>
+                            </property>
+                            <property name="pageStep">
+                                <number>10000</number>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="tickmarks">
+                                <enum>Below</enum>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel1_4</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>11</x>
+                                    <y>64</y>
+                                    <width>68</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="font">
+                                <font>
+                                    <bold>1</bold>
+                                </font>
+                            </property>
+                            <property name="text">
+                                <string>Color:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel8_5</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>85</x>
+                                    <y>134</y>
+                                    <width>25</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="text">
+                                <string>Low</string>
+                            </property>
+                        </widget>
+                        <widget class="QSlider">
+                            <property name="name">
+                                <cstring>kcfg_brightness</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>116</x>
+                                    <y>29</y>
+                                    <width>168</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="maxValue">
+                                <number>65535</number>
+                            </property>
+                            <property name="lineStep">
+                                <number>10</number>
+                            </property>
+                            <property name="pageStep">
+                                <number>10000</number>
+                            </property>
+                            <property name="value">
+                                <number>30000</number>
+                            </property>
+                            <property name="orientation">
+                                <enum>Horizontal</enum>
+                            </property>
+                            <property name="tickmarks">
+                                <enum>Below</enum>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel1_6</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>11</x>
+                                    <y>29</y>
+                                    <width>68</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="font">
+                                <font>
+                                    <bold>1</bold>
+                                </font>
+                            </property>
+                            <property name="text">
+                                <string>Brightness:</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel8_4</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>85</x>
+                                    <y>99</y>
+                                    <width>25</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="text">
+                                <string>Low</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel8_2_5_3</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>290</x>
+                                    <y>64</y>
+                                    <width>28</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="text">
+                                <string>High</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel">
+                            <property name="name">
+                                <cstring>textLabel8_2_5</cstring>
+                            </property>
+                            <property name="geometry">
+                                <rect>
+                                    <x>290</x>
+                                    <y>29</y>
+                                    <width>28</width>
+                                    <height>29</height>
+                                </rect>
+                            </property>
+                            <property name="text">
+                                <string>High</string>
+                            </property>
+                        </widget>
+                    </widget>
+                    <widget class="QComboBox" row="0" column="1">
+                        <item>
+                            <property name="text">
+                                <string>4CIF (704x576)</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>CIF (352x288)</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>QCIF (176x144)</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>SQCIF (128x96)</string>
+                            </property>
+                        </item>
+                        <property name="name">
+                            <cstring>kcfg_videoSize</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="0" column="0">
+                        <property name="name">
+                            <cstring>textLabel2_2</cstring>
+                        </property>
+                        <property name="enabled">
+                            <bool>true</bool>
+                        </property>
+                        <property name="text">
+                            <string>Video size:</string>
+                        </property>
                     </widget>
                 </grid>
             </widget>
@@ -742,6 +844,14 @@ This will only take effect if your openh323 was compiled with (rfc2190-)h263-sup
         </widget>
     </grid>
 </widget>
+<connections>
+    <connection>
+        <sender>m_selectImageButton</sender>
+        <signal>clicked()</signal>
+        <receiver>KonferenceConfigVideoDlgLayout</receiver>
+        <slot>selectImageClicked()</slot>
+    </connection>
+</connections>
 <tabstops>
     <tabstop>kcfg_videoDevice</tabstop>
     <tabstop>kcfg_fakeDeviceImage</tabstop>
@@ -754,5 +864,8 @@ This will only take effect if your openh323 was compiled with (rfc2190-)h263-sup
     <tabstop>kcfg_hue</tabstop>
     <tabstop>tabWidget2</tabstop>
 </tabstops>
+<slots>
+    <slot>selectImageClicked()</slot>
+</slots>
 <layoutdefaults spacing="6" margin="11"/>
 </UI>

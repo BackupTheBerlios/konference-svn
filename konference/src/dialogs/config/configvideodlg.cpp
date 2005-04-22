@@ -22,8 +22,10 @@
 #include <qspinbox.h>
 #include <qstringlist.h>
 #include <qcombobox.h>
+#include <qlineedit.h>
 
 #include <kdebug.h>
+#include <kfiledialog.h>
 
 #include "../../settings.h"
 
@@ -56,6 +58,12 @@ KonferenceConfigVideoDlg::KonferenceConfigVideoDlg( QWidget* parent, const char*
 
 KonferenceConfigVideoDlg::~KonferenceConfigVideoDlg()
 {}
+
+void KonferenceConfigVideoDlg::selectImageClicked()
+{
+	kcfg_fakeDeviceImage->setText(KFileDialog::getOpenFileName());
+}
+
 
 /*$SPECIALIZATION$*/
 

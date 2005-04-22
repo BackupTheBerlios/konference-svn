@@ -56,6 +56,10 @@ partdesktop_DATA = konference_part.desktop
 partrcdir = $(kde_datadir)/konferencepart
 partrc_DATA = konference_part.rc
 
+
+partlogodir = $(kde_datadir)/konference
+partlogo_DATA = logo.png
+
 #KConfigXT stuff
 kde_kcfg_DATA = konference.kcfg
 

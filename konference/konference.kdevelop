@@ -189,6 +189,11 @@
       <inlineGet>true</inlineGet>
       <inlineSet>true</inlineSet>
     </creategettersetter>
+    <designerintegration>
+      <qtdesigner>
+        <implementation class="KonferenceConfigVideoDlg" path="src/dialogs/config/configvideodlglayout.ui" implementationpath="src/dialogs/config/configvideodlg.h" />
+      </qtdesigner>
+    </designerintegration>
   </kdevcppsupport>
   <cppsupportpart>
     <filetemplates>

@@ -32,15 +32,14 @@ public:
 	~KonferenceConfigVideoDlg();
 	/*$PUBLIC_FUNCTIONS$*/
 
-public slots:
-	/*$PUBLIC_SLOTS$*/
-
 protected:
 	/*$PROTECTED_FUNCTIONS$*/
 
 protected slots:
 	/*$PROTECTED_SLOTS$*/
 
+public slots:
+    virtual void selectImageClicked();
 };
 
 #endif

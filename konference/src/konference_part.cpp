@@ -31,6 +31,7 @@
 #include <kcombobox.h>
 #include <kaction.h>
 #include <kurl.h>
+#include <kstandarddirs.h> // for ::locate (to find our logo)
 
 #include "konference_part.h"
 #include "videowidget.h"
@@ -68,11 +69,6 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	//tell it that we want to receive the events
 	sipStack->UiOpened(this);
 
-	if(KonferenceSettings::videoPlugin() == KonferenceSettings::EnumVideoPlugin::V4L)
-		m_webcam = new WebcamV4L();
-	else
-		m_webcam = new WebcamImage();
-
 	int resolutionShift = KonferenceSettings::videoSize();
 	//we shift the 4cif resolution by the index of our combobox
 	//since they are ordered and always multiplied by 2 we can do this quite easily
@@ -87,10 +83,25 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	}
 	kdDebug() << "Res: " << w << "x" << h << endl;
 
-
-	if(!m_webcam->camOpen(KonferenceSettings::videoDevice(), w, h))
-		KMessageBox::error(0,QString("error opening the webcam. expect things to crash...").arg(KonferenceSettings::videoDevice()));
-	//TODO add fallback if camOpen() fails above
+	if(KonferenceSettings::videoPlugin() == KonferenceSettings::EnumVideoPlugin::V4L)
+	{
+		m_webcam = new WebcamV4L();
+		if(!m_webcam->camOpen(KonferenceSettings::videoDevice(), w, h))
+		{
+			KMessageBox::error(0,"error opening the webcam. falling back to an image...");
+			m_webcam = new WebcamImage();
+			if(!m_webcam->camOpen(KonferenceSettings::fakeDeviceImage(), w, h))
+				if(!m_webcam->camOpen(::locate("data", "konference/logo.png"), w, h))
+					KMessageBox::error(0,"failed to open the fake-webcam. this should not happen!!");
+		}
+	}
+	else
+	{
+		m_webcam = new WebcamImage();
+		if(!m_webcam->camOpen(KonferenceSettings::fakeDeviceImage(), w, h))
+			if(!m_webcam->camOpen(::locate("data", "konference/logo.png"), w, h))
+				KMessageBox::error(0,"failed to open the fake-webcam. this should not happen!!");
+	}
 
 	//lets see if the webcam opened at the desired size.
 	if(m_webcam->width() != w || m_webcam->height() != h)
