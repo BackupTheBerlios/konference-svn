@@ -69,7 +69,7 @@ VIDEOBUFFER *rtpVideo::getRxedVideo()
 
 VIDEOBUFFER *rtpVideo::getVideoBuffer(int len)
 {
-	if ((len==0) || (len <= MAX_VIDEO_LEN) && (!killRtpThread)) // len parameter, is passed, should be checked against buffer sizes
+	if ((len==0) || (len <= MAX_VIDEO_LEN)) // len parameter, is passed, should be checked against buffer sizes
 	{
 		VIDEOBUFFER *buf;
 		rtpMutex.lock();

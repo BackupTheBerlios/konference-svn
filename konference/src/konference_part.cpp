@@ -429,8 +429,13 @@ void KonferencePart::TransmitLocalWebcamImage()
 			scaleYuvImage(yuvFrame, m_webcam->width(), m_webcam->height(), txWidth, txHeight, yuvBuffer);
 
 		uchar *encFrame = h263->H263EncodeFrame(yuvBuffer, &encLen);
-		//VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer(encLen);
-		VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer();
+		if(encLen <= 0)
+		{
+			m_webcam->FreeVideoBuffer(m_txWebcamClient, yuvFrame);
+			kdDebug() << "some wired thing happened with h263-encoding" << endl;
+		}
+		VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer(encLen);
+		//VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer();
 		if (vb)
 		{
 			if (encLen > (int)sizeof(vb->video))
