@@ -77,7 +77,7 @@ of which Myth frontend has focus.
  
 **********************************************************************/
 
-SipContainer::SipContainer()
+SipContainer::SipContainer(int listenPort)
 {
 	killSipThread = false;
 	CallState = -1;
@@ -496,13 +496,14 @@ void SipThread::ChangePrimaryCallState(SipFsm *sipFsm, int NewState)
 
 		}
 
+		//TODO sipstack should not have to know anything about the gui!!!
 		if ((CallState == SIP_ICONNECTING) && (FrontEndActive == false))
 		{
 			// No application running to tell of the incoming call
 			// Either alert via on-screen popup or send to voicemail
-			SipNotify *notify = new SipNotify();
-			notify->Display(callerName, callerUrl);
-			delete notify;
+//			SipNotify *notify = new SipNotify();
+//			notify->Display(callerName, callerUrl);
+//			delete notify;
 		}
 	}
 }
@@ -2810,7 +2811,7 @@ This class notifies the Myth Frontend that there is an incoming call
 by building and sending an XML formatted UDP packet to port 6948; where
 a listener will create an OSD message.
 **********************************************************************/
-
+/*
 SipNotify::SipNotify()
 {
 	notifySocket = new QSocketDevice (QSocketDevice::Datagram);
@@ -2862,6 +2863,7 @@ void SipNotify::Display(QString name, QString number)
 	}
 }
 
+*/
 
 /**********************************************************************
 SipTimer

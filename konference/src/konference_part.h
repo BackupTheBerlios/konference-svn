@@ -40,6 +40,7 @@ class SipContainer;
 class WebcamBase;
 class codecBase;
 class audioBase;
+class KonferenceUI;
 
 /**
  * This is a "Part".  It that does all the real work in a KPart
@@ -132,7 +133,8 @@ private:
 	 * @short Widget that draws the video
 	 */
 	KonferenceVideoWidget *m_widget;
-
+	KonferenceUI *ui;
+	
 	/**
 	 * This handles the grabbing from our cam. if there is a new frame our part get an event.
 	 */

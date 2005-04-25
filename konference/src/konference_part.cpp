@@ -49,6 +49,7 @@
 #include "audio/oss.h"
 #include "audio/alsa.h"
 #include "audio/audioarts.h"
+#include "konferenceui.h"
 
 KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
                                 QObject *parent, const char *name )
@@ -63,8 +64,10 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	setInstance( KonferencePartFactory::instance() );
 
 	// widget that displays video
-	m_widget = new KonferenceVideoWidget( parentWidget, "m_widget" );
-
+	//m_widget = new KonferenceVideoWidget( parentWidget, "m_widget" );
+	ui = new KonferenceUI(parentWidget, "ui");
+	m_widget = ui->getVideoWidget();
+	
 	sipStack = new SipContainer();
 	//tell it that we want to receive the events
 	sipStack->UiOpened(this);
@@ -112,8 +115,8 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 
 
 	// notify the part that this is our internal widget
-	setWidget(m_widget);
-
+	//setWidget(m_widget);
+	setWidget(ui);
 	setupLocationComboBox();
 
 	// create our actions
@@ -324,7 +327,7 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 		m_audioDevice->openDevice("plughw:0,0");
 	}
 
-	m_rtpAudio = new rtpAudio(this, KonferenceSettings::localAudioPort(), remoteIP,
+	m_rtpAudio = new rtpAudio(KonferenceSettings::localAudioPort(), remoteIP,
 	                          remoteAudioPort, audioPayload, dtmfPayload,
 	                          m_audioCodec, m_audioDevice);
 

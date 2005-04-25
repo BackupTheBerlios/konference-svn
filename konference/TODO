@@ -1,13 +1,26 @@
 
-- if zou seek for something to be done grep for TODO ... youll surely find something suitable for you
+- if you seek for something to be done grep for TODO ... youll surely find something suitable for you
 
 - refactor/rewrite the webcam handling class to not use threads 
-	and implement other "drivers" such as v4l2 and fake-image device
-	- create a base-class with virtual functions each 'driver' has to implement
+	and implement other "drivers" such as v4l2, windoze, bsd
 	- get rid of the client/server design of the webcam-class (way too complicated)
 	
-- seperate the audio-handling from the rtp-stuff to make it easier to implement other drivers (alsa/jack/gstreamer/arts/whatever)
-
 - implement a wizard (have a look at src/dialogs/wizard)
 
 - does the rtp-stack needs to use threads? im not sure why it should
+- the sip-stack should not know anything about the gui!
+
+- make audio-codecs tunable/configurable
+
+!!- refactor/rewrite sip stack. code is way too complicated! im sure you dont need your own timer class (there are two classes!)
+
+- do buffering of RTP-Packets in the rtp-baseclass.
+- do de-jittering also in rtp-baseclass
+- adaptive jitterbuffer?
+
+- review/rewrite the code so that audio-codecs with other framelength than 20ms can also be used. (speex narrowband with 10ms or 30ms, ilbc 30ms...)
+
+- write alsa-driver (see arc/audio/audiobase and arts)
+
+-port to qt4
+- make simple qt-only (windoes) GUI

@@ -17,73 +17,21 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef RTPBASE_H
-#define RTPBASE_H
 
-#include <qapplication.h>
-#include <qthread.h>
-#include <qsocketdevice.h>
-#include <qmutex.h>
-#include <qdatetime.h>
 
-#include <kdebug.h>
+#include "konferenceui.h"
 
-#define RTP_PAYLOAD_G711U		0x00
-#define RTP_PAYLOAD_G711A		0x08
-#define RTP_PAYLOAD_COMF_NOISE	0x0D
-#define RTP_PAYLOAD_GSM			0x03
-#define PAYLOAD(r)				(((r)->RtpMPT) & (~RTP_PAYLOAD_MARKER_BIT))
-
-#include "jitter.h"
-
-enum rtpTxMode
+KonferenceUI::KonferenceUI(QWidget* parent, const char* name, WFlags fl)
+: KonferenceUI_base(parent,name,fl)
 {
-    RTP_TX_AUDIO_FROM_BUFFER=1,
-    RTP_TX_AUDIO_FROM_MICROPHONE=2,
-    RTP_TX_AUDIO_SILENCE=3,
-    RTP_TX_VIDEO=4
-};
+}
 
-enum rtpRxMode
+KonferenceUI::~KonferenceUI()
 {
-    RTP_RX_AUDIO_TO_BUFFER=1,
-    RTP_RX_AUDIO_TO_SPEAKER=2,
-    RTP_RX_AUDIO_DISCARD=3,
-    RTP_RX_VIDEO=4
-};
+}
+
+/*$SPECIALIZATION$*/
 
 
-/**
- * @brief RTP-Baseclass
- *
- * Base class of the rtp-classes that handle audio and video transmission/reception
- *
- * @author Malte Böhme
- */
-class rtpBase
-{
-public:
-	rtpBase(QString remoteIP, int m_localPort, int m_remotePort);
+#include "konferenceui.moc"
 
-	virtual ~rtpBase();
-
-protected:
-	void openSocket();
-	void closeSocket();
-	void sendPacket(RTPPACKET &RTPpacket);
-	int readPacket(char *rtpData, int length);
-	int bytesAvailable();
-
-	QMutex rtpMutex;
-
-private:
-QSocketDevice *rtpSocket;
-	QHostAddress m_remoteIP;
-	int m_localPort;
-	int m_remotePort;
-
-	unsigned short txSequenceNumber;
-	//QSocketDevice *rtpSocket;
-};
-
-#endif

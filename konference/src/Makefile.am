@@ -3,7 +3,7 @@ INCLUDES = -I$(top_srcdir)/src/dialogs -I$(top_srcdir)/src/dialogs/config \
 	-I$(top_srcdir)/src/dialogs/wizard $(all_includes)
 
 # these are the headers for your project
-noinst_HEADERS = konference.h konference_part.h videowidget.h
+noinst_HEADERS = konference.h konference_part.h videowidget.h konferenceui.h
 
 # let automoc handle all of the meta source files (moc)
 METASOURCES = AUTO
@@ -41,7 +41,7 @@ kde_module_LTLIBRARIES = libkonferencepart.la
 
 # the Part's source, library search path, and link libraries
 libkonferencepart_la_SOURCES = konference_part.cpp videowidget.cpp \
-	settings.kcfgc
+			settings.kcfgc konferenceUI_base.ui konferenceui.cpp
 libkonferencepart_la_LDFLAGS = -module $(KDE_PLUGIN) $(all_libraries)
 libkonferencepart_la_LIBADD = $(top_builddir)/src/video/libvideo.la \
 	$(top_builddir)/src/audio/libaudio.la $(top_builddir)/src/codecs/libcodecs.la \

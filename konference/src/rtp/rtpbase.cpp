@@ -54,9 +54,14 @@ void rtpBase::sendPacket(RTPPACKET &RTPpacket)
 	rtpSocket->writeBlock((char *)&RTPpacket.RtpVPXCC, RTPpacket.len + RTP_HEADER_SIZE, m_remoteIP, m_remotePort);
 }
 
-void rtpBase::readPacket(char *rtpData, int length)
+int rtpBase::readPacket(char *rtpData, int length)
 {
-	rtpSocket->readBlock(rtpData, length);
+	return rtpSocket->readBlock(rtpData, length);
+}
+
+int rtpBase::bytesAvailable()
+{
+	return rtpSocket->bytesAvailable();
 }
 
 void rtpBase::openSocket()

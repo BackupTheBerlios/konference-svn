@@ -81,7 +81,7 @@ class rtpAudio : public rtpBase, QThread
 {
 
 public:
-	rtpAudio(QObject *callingApp, int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, codecBase *codec, audioBase *audioDevice);
+	rtpAudio(int localPort, QString remoteIP, int remotePort, int mediaPay, int dtmfPay, codecBase *codec, audioBase *audioDevice);
 	~rtpAudio();
 	virtual void run();
 
@@ -101,7 +101,6 @@ private:
 	short spkBuffer[1][SPK_BUFFER_SIZE];
 	int spkInBuffer;
 
-	QObject *eventWindow;
 	codecBase   *m_codec;
 	Jitter *pJitter;
 	int rxMsPacketSize;

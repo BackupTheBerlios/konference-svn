@@ -239,7 +239,7 @@ struct CodecNeg
 class SipContainer
 {
 public:
-	SipContainer();
+	SipContainer(int listenPort=5060);
 	~SipContainer();
 	void PlaceNewCall(QString Mode, QString uri, QString name, bool disableNat);
 	void AnswerRingingCall(QString Mode, bool disableNat);
@@ -639,7 +639,7 @@ private:
 
 };
 
-
+/*
 class SipNotify
 {
 public:
@@ -650,7 +650,7 @@ public:
 private:
 	QSocketDevice *notifySocket;
 };
-
+*/
 
 
 class aSipTimer

@@ -182,8 +182,8 @@ void rtpVideo::run()
 		if (killRtpThread)
 			break;
 		
-		//TODO dirty hack...
-		if(rtpSocket->bytesAvailable() > 40)
+		//TODO dirty hack... (prevents blocking)
+		if(bytesAvailable() > 40)
 		{
 			StreamInVideo();
 		}
@@ -239,12 +239,9 @@ void rtpVideo::StreamInVideo()
 	//TODO nice typo :D
 	bool MarketBitSet = false;
 
-	if (!rtpSocket)
-		return;
-
 	// Get a buffer from the Jitter buffer to put the packet in
-	while (((JBuf = pJitter->GetJBuffer()) != 0) &&
-	        ((JBuf->len = rtpSocket->readBlock((char *)&JBuf->RtpVPXCC, sizeof(RTPPACKET))) > 0))
+	while ( (JBuf = pJitter->GetJBuffer()) != 0 &&
+	( (JBuf->len = readPacket( (char *)&JBuf->RtpVPXCC, sizeof(RTPPACKET) ) ) > 0))
 	{
 		if (PAYLOAD(JBuf) == rtpMPT)
 		{
