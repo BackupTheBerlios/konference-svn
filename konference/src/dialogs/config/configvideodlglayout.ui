@@ -23,6 +23,9 @@
             <property name="name">
                 <cstring>tabWidget2</cstring>
             </property>
+            <property name="enabled">
+                <bool>true</bool>
+            </property>
             <widget class="QWidget">
                 <property name="name">
                     <cstring>tab</cstring>

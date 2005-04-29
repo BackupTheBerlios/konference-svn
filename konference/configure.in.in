@@ -3,3 +3,12 @@
 AM_INIT_AUTOMAKE(konference, 0.1)
 AC_C_BIGENDIAN
 AC_CHECK_KDEMAXPATHLEN
+
+has_ffmpeg=no
+AC_CHECK_HEADERS([ffmpeg/avcodec.h], [ has_ffmpeg=yes ] )
+
+        if test "$has_ffmpeg" = "no"
+        then
+                AC_ERROR(you need ffmpeg/libavcodec for konference to compile/run)
+        fi
+

@@ -20,6 +20,7 @@
 
 #include "konference.h"
 #include <kapplication.h>
+#include <kuniqueapplication.h>
 #include <kaboutdata.h>
 #include <kcmdlineargs.h>
 #include <klocale.h>
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
 	about.addCredit( "Paul Volkaerts","MythPhone (i took the codec-, sip-, webcam- and rtp-code)", "paul.volkaerts@lineone.net");
 	KCmdLineArgs::init(argc, argv, &about);
 	KCmdLineArgs::addCmdLineOptions( options );
-	KApplication app;
+	KUniqueApplication app;
 
 	// see if we are starting with session management
 	if (app.isRestored())

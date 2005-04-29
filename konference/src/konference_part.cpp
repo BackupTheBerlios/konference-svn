@@ -20,6 +20,7 @@
 
 #include <qapplication.h>
 
+#include <kapplication.h>
 #include <kinstance.h>
 #include <kaction.h>
 #include <kstdaction.h>
@@ -32,6 +33,8 @@
 #include <kaction.h>
 #include <kurl.h>
 #include <kstandarddirs.h> // for ::locate (to find our logo)
+#include <dcopclient.h>
+#include <dcopobject.h>
 
 #include "konference_part.h"
 #include "videowidget.h"
@@ -51,9 +54,11 @@
 #include "audio/audioarts.h"
 #include "konferenceui.h"
 
+
 KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
                                 QObject *parent, const char *name )
-		: KParts::ReadOnlyPart(parent, name)
+		: DCOPObject("KonferencePart"), KParts::ReadOnlyPart(parent, name)
+		
 {
 	m_parent = parentWidget;
 
@@ -67,7 +72,7 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	//m_widget = new KonferenceVideoWidget( parentWidget, "m_widget" );
 	ui = new KonferenceUI(parentWidget, "ui");
 	m_widget = ui->getVideoWidget();
-	
+
 	sipStack = new SipContainer();
 	//tell it that we want to receive the events
 	sipStack->UiOpened(this);
@@ -131,6 +136,13 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 
 	// Generate a self-event to get current SIP Stack state
 	QApplication::postEvent(this, new SipEvent(SipEvent::SipStateChange));
+
+	// Register with DCOP
+	if ( !kapp->dcopClient()->isRegistered() )
+	{
+		kapp->dcopClient()->registerAs( "konference" );
+		kapp->dcopClient()->setDefaultObject( objId() );
+	}
 }
 
 void KonferencePart::customEvent(QCustomEvent *event)
@@ -558,6 +570,7 @@ void KonferencePart::cancelClicked()
 	m_connectAction->setEnabled(true);
 	m_cancelAction->setEnabled(false);
 }
+
 KonferencePart::~KonferencePart()
 {
 	if(m_webcam)
@@ -572,6 +585,13 @@ KonferencePart::~KonferencePart()
 		delete h263;
 }
 
+//dcop-stuff starts here
+
+void KonferencePart::call(const QString &ip)
+{
+	//makeCall( KURL("callto://" + ip));
+	kdDebug() << "dcop-test called" << endl;
+}
 
 // It's usually safe to leave the factory code alone.. with the
 // notable exception of the KAboutData data

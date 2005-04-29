@@ -41,6 +41,7 @@ class WebcamBase;
 class codecBase;
 class audioBase;
 class KonferenceUI;
+#include "dcopiface.h"
 
 /**
  * This is a "Part".  It that does all the real work in a KPart
@@ -50,7 +51,7 @@ class KonferenceUI;
  * @author Malte Böhme <malte.boehme@rwth-aachen.de>
  * @version 0.1
  */
-class KonferencePart : public KParts::ReadOnlyPart
+class KonferencePart : public KParts::ReadOnlyPart, virtual public KonferenceDCOPIface
 {
 	Q_OBJECT
 public:
@@ -70,6 +71,13 @@ public:
 	 */
 	void customEvent(QCustomEvent *);
 
+	//now the dcop-stuff...
+	/**
+	* Re-implemented from our dcop-class
+	*/
+	virtual void call(const QString &ip);
+	//dcop stuff ends here
+	
 protected:
 	/**
 	 * This must be implemented by each part
@@ -88,17 +96,17 @@ protected slots:
 	void reloadConfig();
 
 	void setupActions();
-	
+
 	//actions
 	void connectClicked();
 	void cancelClicked();
-	
+
 	void startAudioRTP(QString remoteIP, int remoteAudioPort, int audioPayload, int dtmfPayload);
 	void startVideoRTP(QString remoteIP, int remoteVideoPort, int videoPayload, QString rxVideoRes);
-	
+
 	void stopAudioRTP();
 	void stopVideoRTP();
-	
+
 	/**
 	* Creates and initialises our location-combobox
 	*/
@@ -109,7 +117,7 @@ protected slots:
 	* @param address This is the KURL to get appended to the history
 	*/
 	void addToHistory( const KURL &address );
-	
+
 private:
 	/**
 	 * This basically redirects the imag from the webcam to our display widget
@@ -117,14 +125,14 @@ private:
 	 */
 	void DrawLocalWebcamImage();
 	void TransmitLocalWebcamImage();
-	
+
 	void ProcessSipNotification();
 	void ProcessSipStateChange();
 	void ProcessRxVideoFrame();
 
 	uchar rxRgbBuffer[704*4*576];//max rgb-framesize
 	uchar yuvBuffer[800*576*3/2];//max yuv-framesize
-	
+
 	QWidget *m_parent;
 
 	/**
@@ -134,7 +142,7 @@ private:
 	 */
 	KonferenceVideoWidget *m_widget;
 	KonferenceUI *ui;
-	
+
 	/**
 	 * This handles the grabbing from our cam. if there is a new frame our part get an event.
 	 */
@@ -144,12 +152,12 @@ private:
 	 * Our audio codec that we are using.
 	 */
 	codecBase *m_audioCodec;
-	
+
 	/**
 	 * Our audio device that we want to use.
 	 */
 	audioBase *m_audioDevice;
-	
+
 	KHistoryCombo *m_location;
 
 	KAction *m_connectAction;
