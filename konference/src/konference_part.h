@@ -41,6 +41,7 @@ class WebcamBase;
 class codecBase;
 class audioBase;
 class KonferenceUI;
+class KonferenceWizard;
 #include "dcopiface.h"
 
 /**
@@ -90,6 +91,8 @@ protected slots:
 	 */
 	void showConfigDialog();
 
+	void showWizard();
+	
 	/**
 	 * Reloads the configuration
 	 */
@@ -143,6 +146,11 @@ private:
 	KonferenceVideoWidget *m_widget;
 	KonferenceUI *ui;
 
+	/**
+	 * Our wizard
+	 */
+	KonferenceWizard *m_wizard;
+	
 	/**
 	 * This handles the grabbing from our cam. if there is a new frame our part get an event.
 	 */

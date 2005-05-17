@@ -61,8 +61,8 @@ QLineEdit *page2::getNameEdit()
 void page2::pluginChanged(const QString& plugin)
 {
 	kdDebug() << "page2::pluginChanged()" << endl;
-	m_audioOutputDeviceComboBox->clear();
-	m_audioInputDeviceComboBox->clear();
+	//m_audioOutputDeviceComboBox->clear();
+	//m_audioInputDeviceComboBox->clear();
 //	m_audioOutputDeviceComboBox->insertStringList( KonferenceAudio::getPlayerDevices(plugin));
 //	m_audioInputDeviceComboBox->insertStringList(  KonferenceAudio::getRecorderDevices(plugin));
 }

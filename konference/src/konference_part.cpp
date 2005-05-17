@@ -53,6 +53,7 @@
 #include "audio/alsa.h"
 #include "audio/audioarts.h"
 #include "konferenceui.h"
+#include "dialogs/wizard/wizard.h"
 
 
 KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
@@ -497,6 +498,19 @@ void KonferencePart::showConfigDialog()
 	dlg->show();
 }
 
+void KonferencePart::showWizard()
+{
+	//See if there is already a dialog created, and if so, display it and return
+	//if( KonferenceConfigDialog::showDialog("Configuration"))
+	//	return;
+	//if no dialog was created before, we do it now
+	//KonferenceConfigDialog * dlg = new KonferenceConfigDialog(m_parent);
+	//connect(dlg,SIGNAL(settingsChanged()), this,SLOT(reloadConfig()));
+	//dlg->show();
+	m_wizard = new KonferenceWizard(m_parent);
+	m_wizard->show();
+}
+
 void KonferencePart::reloadConfig()
 {
 	m_webcam->setBrightness(KonferenceSettings::brightness());
@@ -508,6 +522,7 @@ void KonferencePart::reloadConfig()
 void KonferencePart::setupActions()
 {
 	( void ) new KAction( i18n( "&Configure Konference" ), "configure", 0, this, SLOT( showConfigDialog() ), actionCollection(), "config" );
+	( void ) new KAction( i18n( "&Configure Konference (Wizard)" ), "wizard", 0, this, SLOT( showWizard() ), actionCollection(), "wizard" );
 
 	m_connectAction = new KAction( i18n( "C&onnect" ), "connect_creating", 0, this, SLOT( connectClicked() ), actionCollection(), "connect" );
 	m_cancelAction = new KAction( i18n( "&Stop connection" ), "button_cancel", 0, this, SLOT( cancelClicked() ), actionCollection(), "stop" );

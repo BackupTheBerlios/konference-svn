@@ -28,23 +28,30 @@
 
 #include "page1.h"
 #include "page2.h"
-
+#include "page3.h"
+#include "page4.h"
 #include "../../settings.h"
 #include "wizard.h"
 
 KonferenceWizard::KonferenceWizard(QWidget* parent = 0, const char* name)
- : KWizard(parent, name)
+		: KWizard(parent, name)
 {
-	
-  setCaption( i18n("Konference Wizard" ) );
+
+	setCaption( i18n("Konference Wizard" ) );
 	m_page1 = new page1();
 	addPage(m_page1,i18n("Konference Configuration Wizard"));
 	setHelpEnabled( m_page1, false );
-	
+
 	m_page2 = new page2();
+	m_page2->getNameEdit()->setText(KonferenceSettings::name());
 	connect(m_page2->getNameEdit(), SIGNAL( textChanged( const QString &)), this,SLOT( slotNameChanged( const QString & )));
 	addPage(m_page2,i18n("Personal Option"));
 	setHelpEnabled( m_page2, false );
+
+	m_page3 = new page3();
+	addPage(m_page3,i18n("Video"));
+	m_page4 = new page4();
+	addPage(m_page4,i18n("Audio"));
 }
 
 void KonferenceWizard::slotNameChanged( const QString &k )
@@ -59,9 +66,10 @@ void KonferenceWizard::accept()
 	//we save our settings...
 	KonferenceSettings::setName(m_page2->m_nameEdit->text());
 	//KonferenceSettings::setAudioPlugin(m_page2->m_audioPluginComboBox->currentText());
-	KonferenceSettings::setInputDevice(m_page2->m_audioInputDeviceComboBox->currentText());
-	KonferenceSettings::setOutputDevice(m_page2->m_audioOutputDeviceComboBox->currentText());
-	KonferenceSettings::setVideoDevice(m_page2->m_videoComboBox->currentText());
+	//KonferenceSettings::setInputDevice(m_page2->m_audioInputDeviceComboBox->currentText());
+	//KonferenceSettings::setOutputDevice(m_page2->m_audioOutputDeviceComboBox->currentText());
+	//KonferenceSettings::setVideoDevice(m_page2->m_videoComboBox->currentText());
+	KonferenceSettings::writeConfig();
 	KWizard::accept();
 }
 
@@ -78,9 +86,7 @@ void KonferenceWizard::back()
 }
 
 KonferenceWizard::~KonferenceWizard()
-{
-}
-
+{}
 
 
 #include "wizard.moc"

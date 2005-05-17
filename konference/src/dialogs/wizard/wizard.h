@@ -26,6 +26,9 @@
 
 class page1;
 class page2;
+class page3;
+class page4;
+
 
 /**
 This class ties the dialogd used for our configuration-wizard together.
@@ -52,6 +55,8 @@ protected slots:
 private:
 	page1 *m_page1;
 	page2 *m_page2;
+	page3 *m_page3;
+	page4 *m_page4;
 };
 
 #endif
