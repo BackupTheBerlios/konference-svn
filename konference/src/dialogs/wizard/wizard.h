@@ -43,7 +43,8 @@ public:
 	KonferenceWizard(QWidget *parent, const char* name = 0);
 
 	~KonferenceWizard();
-
+	bool finished(){return m_finished;};
+	
 public slots:
 	//void slotNameChanged( const QString & );
 
@@ -51,12 +52,17 @@ protected slots:
 	virtual void next();
 	virtual void back();
 	virtual void accept();
+	virtual void reject();
+	
 	void slotNameChanged(const QString &);
+	
 private:
 	page1 *m_page1;
 	page2 *m_page2;
 	page3 *m_page3;
 	page4 *m_page4;
+	
+	bool m_finished;
 };
 
 #endif

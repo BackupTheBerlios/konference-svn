@@ -74,6 +74,12 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	ui = new KonferenceUI(parentWidget, "ui");
 	m_widget = ui->getVideoWidget();
 
+	setWidget(ui);
+	showWizard();
+	//TODO ?
+	//while(!m_wizard->finished())
+	//{}
+	
 	sipStack = new SipContainer();
 	//tell it that we want to receive the events
 	sipStack->UiOpened(this);
@@ -122,7 +128,7 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 
 	// notify the part that this is our internal widget
 	//setWidget(m_widget);
-	setWidget(ui);
+	//setWidget(ui);
 	setupLocationComboBox();
 
 	// create our actions

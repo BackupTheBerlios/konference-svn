@@ -34,9 +34,10 @@
 #include "wizard.h"
 
 KonferenceWizard::KonferenceWizard(QWidget* parent = 0, const char* name)
-		: KWizard(parent, name)
+		: KWizard(parent, name,TRUE)
 {
-
+	m_finished = false;
+	
 	setCaption( i18n("Konference Wizard" ) );
 	m_page1 = new page1();
 	addPage(m_page1,i18n("Konference Configuration Wizard"));
@@ -70,7 +71,15 @@ void KonferenceWizard::accept()
 	//KonferenceSettings::setOutputDevice(m_page2->m_audioOutputDeviceComboBox->currentText());
 	//KonferenceSettings::setVideoDevice(m_page2->m_videoComboBox->currentText());
 	KonferenceSettings::writeConfig();
+	m_finished = true;
 	KWizard::accept();
+}
+
+void KonferenceWizard::reject()
+{
+	//TODO
+	m_finished = true;
+	KWizard::reject();
 }
 
 //added for later aditions
