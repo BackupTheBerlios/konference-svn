@@ -1,0 +1,84 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>summary</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>summary</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>208</width>
+            <height>318</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>180</y>
+                <width>131</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>textLabel1</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>210</y>
+                <width>131</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>textLabel1</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>250</y>
+                <width>131</width>
+                <height>21</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>textLabel1</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1_4</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>20</y>
+                <width>131</width>
+                <height>41</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>All informattion correct?</string>
+        </property>
+    </widget>
+</widget>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

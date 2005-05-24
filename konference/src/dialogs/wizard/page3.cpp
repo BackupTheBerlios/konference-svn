@@ -21,6 +21,7 @@
 
 #include "page3.h"
 #include <kstandarddirs.h> // for ::locate (to find our logo)
+#include <kdebug.h>
 
 #include "../../video/webcamv4l.h"
 #include "../../video/webcamimage.h"
@@ -34,7 +35,9 @@
 page3::page3(QWidget* parent, const char* name, WFlags fl)
 		: page3layout(parent,name,fl)
 {
+	kdDebug() << "page3..." << endl;
 	m_webcam = new WebcamImage();
+	//m_videoWidget = new KonferenceVideoWidget((QWidget*)m_previewGroup,"videoWidget");
 	int resolutionShift = KonferenceSettings::videoSize();
 	//we shift the 4cif resolution by the index of our combobox
 	//since they are ordered and always multiplied by 2 we can do this quite easily
@@ -52,7 +55,8 @@ page3::page3(QWidget* parent, const char* name, WFlags fl)
 {}
 	m_webcamClient = m_webcam->RegisterClient(PIX_FMT_RGBA32, 20/*fps*/, this);
 
-	m_videoWidget->resize(352,288);
+	//m_videoWidget->resize(w,h);
+	//redraw();
 }
 
 void page3::customEvent(QCustomEvent *event)
@@ -81,6 +85,11 @@ void page3::customEvent(QCustomEvent *event)
 
 page3::~page3()
 {}
+
+void page3::pluginChanged(const QString &k)
+{
+	kdDebug() << "wizard (page3): plugin changed to " << k << endl;
+}
 
 /*$SPECIALIZATION$*/
 

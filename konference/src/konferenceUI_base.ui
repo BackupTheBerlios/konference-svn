@@ -8,14 +8,14 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>406</width>
+            <width>333</width>
             <height>387</height>
         </rect>
     </property>
     <property name="caption">
         <string>Form1</string>
     </property>
-    <vbox>
+    <hbox>
         <property name="name">
             <cstring>unnamed</cstring>
         </property>
@@ -35,20 +35,15 @@
                 </sizepolicy>
             </property>
         </widget>
-        <widget class="QProgressBar">
-            <property name="name">
-                <cstring>progressBar1</cstring>
-            </property>
-        </widget>
-    </vbox>
+    </hbox>
 </widget>
 <customwidgets>
     <customwidget>
         <class>KonferenceVideoWidget</class>
         <header location="local">videowidget.h</header>
         <sizehint>
-            <width>100</width>
-            <height>100</height>
+            <width>176</width>
+            <height>144</height>
         </sizehint>
         <container>0</container>
         <sizepolicy>

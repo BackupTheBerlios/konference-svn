@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>445</width>
-            <height>241</height>
+            <width>257</width>
+            <height>299</height>
         </rect>
     </property>
     <property name="caption">
@@ -30,65 +30,92 @@
                 <property name="name">
                     <cstring>unnamed</cstring>
                 </property>
-                <widget class="KonferenceVideoWidget" row="1" column="0">
+                <widget class="QButtonGroup" row="1" column="0">
                     <property name="name">
-                        <cstring>m_videoWidget</cstring>
+                        <cstring>m_previewGroup</cstring>
                     </property>
-                    <property name="minimumSize">
-                        <size>
-                            <width>50</width>
-                            <height>50</height>
-                        </size>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>4</hsizetype>
+                            <vsizetype>4</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
                     </property>
-                </widget>
-                <widget class="QLayoutWidget" row="0" column="0">
-                    <property name="name">
-                        <cstring>layout2</cstring>
+                    <property name="title">
+                        <string>Preview</string>
                     </property>
-                    <vbox>
+                    <grid>
                         <property name="name">
                             <cstring>unnamed</cstring>
                         </property>
-                        <widget class="QLayoutWidget">
+                        <widget class="KonferenceVideoWidget" row="0" column="0">
                             <property name="name">
-                                <cstring>layout1</cstring>
+                                <cstring>m_videoWidget</cstring>
                             </property>
-                            <hbox>
-                                <property name="name">
-                                    <cstring>unnamed</cstring>
-                                </property>
-                                <widget class="QLabel">
-                                    <property name="name">
-                                        <cstring>textLabel3_2</cstring>
-                                    </property>
-                                    <property name="text">
-                                        <string>Source:</string>
-                                    </property>
-                                </widget>
-                                <widget class="QComboBox">
-                                    <item>
-                                        <property name="text">
-                                            <string>/dev/video0</string>
-                                        </property>
-                                    </item>
-                                    <property name="name">
-                                        <cstring>m_device</cstring>
-                                    </property>
-                                    <property name="sizePolicy">
-                                        <sizepolicy>
-                                            <hsizetype>3</hsizetype>
-                                            <vsizetype>0</vsizetype>
-                                            <horstretch>0</horstretch>
-                                            <verstretch>0</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="editable">
-                                        <bool>true</bool>
-                                    </property>
-                                </widget>
-                            </hbox>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>7</hsizetype>
+                                    <vsizetype>7</vsizetype>
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                                <size>
+                                    <width>50</width>
+                                    <height>50</height>
+                                </size>
+                            </property>
                         </widget>
-                        <widget class="QComboBox">
+                    </grid>
+                </widget>
+                <widget class="QLayoutWidget" row="0" column="0">
+                    <property name="name">
+                        <cstring>layout3</cstring>
+                    </property>
+                    <grid>
+                        <property name="name">
+                            <cstring>unnamed</cstring>
+                        </property>
+                        <widget class="QLabel" row="1" column="0">
+                            <property name="name">
+                                <cstring>textLabel3_2_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Device</string>
+                            </property>
+                        </widget>
+                        <widget class="QLabel" row="0" column="0">
+                            <property name="name">
+                                <cstring>textLabel3_2</cstring>
+                            </property>
+                            <property name="text">
+                                <string>Plugin</string>
+                            </property>
+                        </widget>
+                        <widget class="QComboBox" row="1" column="1">
+                            <item>
+                                <property name="text">
+                                    <string>/dev/video0</string>
+                                </property>
+                            </item>
+                            <property name="name">
+                                <cstring>m_device</cstring>
+                            </property>
+                            <property name="sizePolicy">
+                                <sizepolicy>
+                                    <hsizetype>3</hsizetype>
+                                    <vsizetype>0</vsizetype>
+                                    <horstretch>0</horstretch>
+                                    <verstretch>0</verstretch>
+                                </sizepolicy>
+                            </property>
+                            <property name="editable">
+                                <bool>true</bool>
+                            </property>
+                        </widget>
+                        <widget class="QComboBox" row="0" column="1">
                             <item>
                                 <property name="text">
                                     <string>V4L</string>
@@ -102,8 +129,11 @@
                             <property name="name">
                                 <cstring>m_pluginCombo</cstring>
                             </property>
+                            <property name="editable">
+                                <bool>false</bool>
+                            </property>
                         </widget>
-                    </vbox>
+                    </grid>
                 </widget>
             </grid>
         </widget>
@@ -114,8 +144,8 @@
         <class>KonferenceVideoWidget</class>
         <header location="local">videowidget.h</header>
         <sizehint>
-            <width>100</width>
-            <height>100</height>
+            <width>176</width>
+            <height>144</height>
         </sizehint>
         <container>0</container>
         <sizepolicy>
@@ -132,6 +162,17 @@
         <data format="XBM.GZ" length="79">789c534e494dcbcc4b554829cdcdad8c2fcf4c29c95030e0524611cd48cd4ccf28010a1797249664262b2467241641a592324b8aa363156c15aab914146aadb90067111b1f</data>
     </image>
 </images>
+<connections>
+    <connection>
+        <sender>m_pluginCombo</sender>
+        <signal>activated(const QString&amp;)</signal>
+        <receiver>page3layout</receiver>
+        <slot>pluginChanged(const QString&amp;)</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>pluginChanged(const QString&amp;)</slot>
+</slots>
 <layoutdefaults spacing="6" margin="11"/>
 <includehints>
     <includehint>konferencevideowidget.h</includehint>

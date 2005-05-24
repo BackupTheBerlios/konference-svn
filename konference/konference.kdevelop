@@ -20,7 +20,7 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>src/libkonferencepart.la</activetarget>
+      <activetarget>src/dialogs/wizard/libwizard.la</activetarget>
       <useconfiguration>debug</useconfiguration>
     </general>
     <run>
@@ -191,7 +191,7 @@
     </creategettersetter>
     <designerintegration>
       <qtdesigner>
-        <implementation class="KonferenceConfigVideoDlg" path="src/dialogs/config/configvideodlglayout.ui" implementationpath="src/dialogs/config/configvideodlg.h" />
+        <implementation class="page3" path="/home/maldn/konference/src/dialogs/wizard/page3layout.ui" implementationpath="/home/maldn/konference/src/dialogs/wizard/page3.h" />
       </qtdesigner>
     </designerintegration>
   </kdevcppsupport>

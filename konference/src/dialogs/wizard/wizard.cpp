@@ -48,7 +48,8 @@ KonferenceWizard::KonferenceWizard(QWidget* parent = 0, const char* name)
 	connect(m_page2->getNameEdit(), SIGNAL( textChanged( const QString &)), this,SLOT( slotNameChanged( const QString & )));
 	addPage(m_page2,i18n("Personal Option"));
 	setHelpEnabled( m_page2, false );
-
+	nextButton()->setEnabled(false);
+	
 	m_page3 = new page3();
 	addPage(m_page3,i18n("Video"));
 	m_page4 = new page4();
@@ -58,7 +59,14 @@ KonferenceWizard::KonferenceWizard(QWidget* parent = 0, const char* name)
 void KonferenceWizard::slotNameChanged( const QString &k )
 {
 	//kdDebug() << "mooooooooooooooooooh: " << k << endl;
-	finishButton()->setEnabled(true);
+	if(k != "") //TODO
+	{
+		nextButton()->setEnabled(true);
+	}
+	else
+	{
+		nextButton()->setEnabled(false);
+	}
 }
 
 //added for later aditions

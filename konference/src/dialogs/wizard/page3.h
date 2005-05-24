@@ -40,8 +40,6 @@ wcClient *m_webcamClient;
 	 * This can be considered the "glue-code" that connects rtp, view, sip and webcam.
 	 */
 	void customEvent(QCustomEvent *);
-public slots:
-  /*$PUBLIC_SLOTS$*/
 
 protected:
   /*$PROTECTED_FUNCTIONS$*/
@@ -49,6 +47,8 @@ protected:
 protected slots:
   /*$PROTECTED_SLOTS$*/
 
+public slots:
+    virtual void pluginChanged(const QString&);
 };
 
 #endif
