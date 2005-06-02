@@ -35,7 +35,9 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 
-#include "sipstack.h"
+#include "sipcallid.h"
+#include "sipmsg.h"
+#include "sipurl.h"
 
 class SipEvent : public QCustomEvent
 {

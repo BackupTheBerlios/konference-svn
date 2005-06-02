@@ -2,5 +2,7 @@ INCLUDES = -I$(top_srcdir)/src/dialogs -I$(top_srcdir)/src/dialogs/config -I$(to
 METASOURCES = AUTO
 libsip_la_LDFLAGS = $(all_libraries)
 noinst_LTLIBRARIES = libsip.la
-libsip_la_SOURCES = sipfsm.cpp sipstack.cpp md5digest.cpp
-noinst_HEADERS = sipfsm.h sipstack.h md5digest.h
+libsip_la_SOURCES = sipfsm.cpp md5digest.cpp sipmsg.cpp sipcallid.cpp \
+	sipsdp.cpp sipxpidf.cpp sipurl.cpp
+noinst_HEADERS = sipfsm.h md5digest.h sipmsg.h sipcallid.h sipsdp.h sipxpidf.h \
+	sipurl.h

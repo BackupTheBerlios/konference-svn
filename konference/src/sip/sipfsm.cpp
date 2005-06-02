@@ -53,7 +53,8 @@
 using namespace std;
 
 #include "sipfsm.h"
-
+#include "sipsdp.h"
+#include "sipxpidf.h"
 
 // Static variables for the debug file used
 QFile *debugFile;

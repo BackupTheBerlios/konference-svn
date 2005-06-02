@@ -1,44 +1,35 @@
-/*
-	sipstack.cpp
- 
-	(c) 2004 Paul Volkaerts
- 
-  Procedures and classes for building and parsing SIP messages.
-	
-*/
+/***************************************************************************
+ *   Copyright (C) 2005 by Malte Böhme                                     *
+ *   malte.boehme@rwth-aachen.de                                           *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU General Public License for more details.                          *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ ***************************************************************************/
 
-
-#include <qapplication.h>
-#include <qdatetime.h>
-#include <qhostaddress.h>
+#include <iostream>
+using namespace std;
+ 
 #include <qdom.h>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
-#include <sys/types.h>
-#include <sys/stat.h>
-#ifndef WIN32
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <netdb.h>
-#endif
-
-#ifdef WIN32
-#include <winsock2.h>
-#endif
-
-using namespace std;
-
-#ifndef WIN32
-#include "config.h"
-#endif
-#include "sipstack.h"
+#include "sipcallid.h"
+#include "sipsdp.h"
+#include "sipxpidf.h"
+#include "sipurl.h"
 #include "md5digest.h"
 
-//////////////////////////////////////////////////////////////////////////////
-//                                    SipMsg
-//////////////////////////////////////////////////////////////////////////////
+#include "sipmsg.h"
 
 
 SipMsg::SipMsg(QString Method)
@@ -693,273 +684,6 @@ void SipMsg::decodeSDPMediaAttribute(QString a, QPtrList<sdpCodec> *codecList)
 			}
 		}
 	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-//                                    SipUrl
-//////////////////////////////////////////////////////////////////////////////
-
-SipUrl::SipUrl(QString url, QString DisplayName)
-{
-	thisDisplayName = DisplayName;
-	QString temp = url;
-	if (url.startsWith("sip:"))
-		url = temp.mid(4);
-	QString PortStr = url.section(':', 1, 1);
-	thisPort = PortStr.length() > 0 ? PortStr.toInt() : 5060;
-	QString temp1 = url.section(':', 0, 0);
-	thisUser = temp1.section('@', 0, 0);
-	thisHostname = temp1.section('@', 1, 1);
-	HostnameToIpAddr();
-	encode();
-}
-
-SipUrl::SipUrl(QString dispName, QString User, QString Hostname, int Port)
-{
-	thisDisplayName = dispName;
-	thisUser = User;
-	thisHostname = Hostname;
-	thisPort = Port;
-
-	if (Hostname.contains(':'))
-	{
-		thisHostname = Hostname.section(':', 0, 0);
-		thisPort = atoi(Hostname.section(':', 1, 1));
-	}
-
-	HostnameToIpAddr();
-	encode();
-}
-
-SipUrl::SipUrl(SipUrl *orig)
-{
-	thisDisplayName = orig->thisDisplayName;
-	thisUser = orig->thisUser;
-	thisHostname = orig->thisHostname;
-	thisPort = orig->thisPort;
-	thisUrl = orig->thisUrl;
-	thisHostIp = orig->thisHostIp;
-}
-
-void SipUrl::HostnameToIpAddr()
-{
-	if (thisHostname.length() > 0)
-	{
-		QHostAddress ha;
-		ha.setAddress(thisHostname); // See if it is already an IP address
-		if (ha.toString() != thisHostname)
-		{
-			// Need a DNS lookup on the URL
-			struct hostent *h;
-			h = gethostbyname((const char *)thisHostname);
-			if (h != 0)
-			{
-				ha.setAddress(ntohl(*(long *)h->h_addr));
-				thisHostIp = ha.toString();
-			}
-			else
-				thisHostIp = "";
-		}
-		else
-			thisHostIp = thisHostname;
-	}
-	else
-		thisHostIp = "";
-}
-
-void SipUrl::encode()
-{
-	QString PortStr = "";
-	thisUrl = "";
-	if (thisPort != 5060) // Note; some proxies demand the port to be present even if it is 5060
-		PortStr = QString(":") + QString::number(thisPort);
-	if (thisDisplayName.length() > 0)
-		thisUrl = "\"" + thisDisplayName + "\" ";
-	thisUrl += "<sip:";
-	if (thisUser.length() > 0)
-		thisUrl += thisUser + "@";
-	thisUrl += thisHostname + PortStr + ">";
-}
-
-QString SipUrl::formatReqLineUrl()
-{
-	QString s("sip:");
-	if (thisUser.length() > 0)
-		s += thisUser + "@";
-	s += thisHostname;
-	if (thisPort != 5060)
-		s += ":" + QString::number(thisPort);
-	return s;
-}
-
-QString SipUrl::formatContactUrl()
-{
-	QString s("<sip:");
-	s += thisHostIp;
-	if (thisPort != 5060)
-		s += ":" + QString::number(thisPort);
-	s += ">";
-	return s;
-}
-
-SipUrl::~SipUrl()
-{}
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-//                                    SipCallId
-//////////////////////////////////////////////////////////////////////////////
-
-int callIdEnumerator = 0x6243; // Random-ish number
-
-SipCallId::SipCallId(QString ip)
-{
-	Generate(ip);
-}
-
-SipCallId::~SipCallId()
-{}
-
-void SipCallId::Generate(QString ip)
-{
-	QString now = (QDateTime::currentDateTime()).toString("hhmmsszzz-ddMMyyyy");
-	thisCallid = QString::number(callIdEnumerator++,16) + "-" + now + "@" + ip;
-}
-
-bool SipCallId::operator== (SipCallId &rhs)
-{
-	bool match = (thisCallid.compare(rhs.string()) == 0);
-	return match;
-}
-
-SipCallId &SipCallId::operator= (SipCallId &rhs)
-{
-	if (this == &rhs)
-		return *this;
-
-	thisCallid = rhs.thisCallid;
-
-	return *this;
-}
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-//                                    SipSdp
-//////////////////////////////////////////////////////////////////////////////
-
-SipSdp::SipSdp(QString IP, int aPort, int vPort)
-{
-	audioPort = aPort;
-	videoPort = vPort;
-	MediaIp = IP;
-	thisSdp = "";
-}
-
-SipSdp::~SipSdp()
-{
-	sdpCodec *c;
-	while ((c=audioCodec.first()) != 0)
-	{
-		audioCodec.remove();
-		delete c;
-	}
-	while ((c=videoCodec.first()) != 0)
-	{
-		videoCodec.remove();
-		delete c;
-	}
-}
-
-void SipSdp::addAudioCodec(int c, QString descr, QString fmt)
-{
-	audioCodec.append(new sdpCodec(c, descr, fmt));
-}
-
-void SipSdp::addVideoCodec(int c, QString descr, QString fmt)
-{
-	videoCodec.append(new sdpCodec(c, descr, fmt));
-}
-
-void SipSdp::encode()
-{
-	sdpCodec *c;
-
-	thisSdp = "v=0\r\n"
-	          "o=Myth-UA 0 0 IN IP4 " + MediaIp + "\r\n"
-	          "s=SIP Call\r\n"
-	          "c=IN IP4 " + MediaIp + "\r\n"
-	          "t=0 0\r\n";
-
-	if ((audioPort != 0) && (audioCodec.count()>0))
-	{
-		thisSdp += QString("m=audio ") + QString::number(audioPort) + " RTP/AVP";
-		for (c=audioCodec.first(); c; c=audioCodec.next())
-			thisSdp += " " + QString::number(c->intValue());
-		thisSdp += "\r\n";
-		for (c=audioCodec.first(); c; c=audioCodec.next())
-			thisSdp += QString("a=rtpmap:") + QString::number(c->intValue()) + " " + c->strValue() + "\r\n";
-		for (c=audioCodec.first(); c; c=audioCodec.next())
-			if (c->fmtValue() != "")
-				thisSdp += "a=fmtp:" + QString::number(c->intValue()) + " " + c->fmtValue() + "\r\n";
-		thisSdp += "a=ptime:20\r\n";
-	}
-
-	if ((videoPort != 0) && (videoCodec.count()>0))
-	{
-		thisSdp += QString("m=video ") + QString::number(videoPort) + " RTP/AVP";
-		for (c=videoCodec.first(); c; c=videoCodec.next())
-			thisSdp += " " + QString::number(c->intValue());
-		thisSdp += "\r\n";
-		for (c=videoCodec.first(); c; c=videoCodec.next())
-			thisSdp += QString("a=rtpmap:") + QString::number(c->intValue()) + " " + c->strValue() + "\r\n";
-		for (c=videoCodec.first(); c; c=videoCodec.next())
-			if (c->fmtValue() != "")
-				thisSdp += "a=fmtp:" + QString::number(c->intValue()) + " " + c->fmtValue() + "\r\n";
-	}
-
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-//                                    SipXpidf
-//////////////////////////////////////////////////////////////////////////////
-
-SipXpidf::SipXpidf()
-{
-	user = "";
-	host = "";
-	sipStatus = "open";
-	sipSubstatus = "online";
-}
-
-SipXpidf::SipXpidf(SipUrl &Url)
-{
-	user = Url.getUser();
-	host = Url.getHost();
-	sipStatus = "open";
-	sipSubstatus = "online";
-}
-
-QString SipXpidf::encode()
-{
-	QString xpidf = "<?xml version=\"1.0\"?>\n"
-	                "<!DOCTYPE presence\n"
-	                "PUBLIC \"-//IETF//DTD RFCxxxx XPIDF 1.0//EN\" \"xpidf.dtd\">\n"
-	                "<presence>\n"
-	                "<presentity uri=\"sip:" + user + "@" + host + ";method=SUBSCRIBE\" />\n"
-	                "<atom id=\"1000\">\n"
-	                "<address uri=\"sip:" + user + "@" + host + ";user=ip\" priority=\"0.800000\">\n"
-	                "<status status=\"" + sipStatus + "\" />\n"
-	                "<msnsubstatus substatus=\"" + sipSubstatus + "\" />\n"
-	                "</address>\n"
-	                "</atom>\n"
-	                "</presence>";
-	return xpidf;
 }
 
 
