@@ -59,7 +59,7 @@
 KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
                                 QObject *parent, const char *name )
 		: DCOPObject("KonferencePart"), KParts::ReadOnlyPart(parent, name)
-		
+
 {
 	m_parent = parentWidget;
 
@@ -75,11 +75,12 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 	m_widget = ui->getVideoWidget();
 
 	setWidget(ui);
-	showWizard();
-	//TODO ?
-	//while(!m_wizard->finished())
-	//{}
-	
+	if(KonferenceSettings::firstRun()==true)
+	{
+		KonferenceSettings::setFirstRun(false);
+		showWizard();
+	}
+
 	sipStack = new SipContainer();
 	//tell it that we want to receive the events
 	sipStack->UiOpened(this);
@@ -437,7 +438,7 @@ void KonferencePart::ProcessRxVideoFrame()
 
 void KonferencePart::TransmitLocalWebcamImage()
 {
-	unsigned char *yuvFrame = m_webcam->GetVideoFrame(m_txWebcamClient);
+	uchar *yuvFrame = m_webcam->GetVideoFrame(m_txWebcamClient);
 
 	int encLen=0;
 	if (yuvFrame != 0 && m_rtpVideo)
@@ -445,41 +446,45 @@ void KonferencePart::TransmitLocalWebcamImage()
 		//TODO find better fix for odd quickcam resolutions
 		int txWidth = m_webcam->width();//176;
 		int txHeight = m_webcam->height();//144;
-		if((m_webcam->width() < txWidth) || (m_webcam->height() < txWidth))
-			cropYuvImage(yuvFrame, m_webcam->width(), m_webcam->height(), 0, 0, txWidth, txHeight, yuvBuffer);
-		else
-			scaleYuvImage(yuvFrame, m_webcam->width(), m_webcam->height(), txWidth, txHeight, yuvBuffer);
+		//if((m_webcam->width() < txWidth) || (m_webcam->height() < txWidth))
+		//	cropYuvImage(yuvFrame, m_webcam->width(), m_webcam->height(), 0, 0, txWidth, txHeight, yuvBuffer);
+		//else
+		scaleYuvImage(yuvFrame, m_webcam->width(), m_webcam->height(), txWidth, txHeight, yuvBuffer);
 
 		uchar *encFrame = h263->H263EncodeFrame(yuvBuffer, &encLen);
-		if(encLen <= 0)
+		if(encLen < 0)
 		{
 			m_webcam->FreeVideoBuffer(m_txWebcamClient, yuvFrame);
-			kdDebug() << "some wired thing happened with h263-encoding" << endl;
+			kdDebug() << "some wired thing happened with h263-encoding! encLen=" << encLen << endl;
 		}
-		VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer(encLen);
-		//VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer();
-		if (vb)
+		//VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer(encLen);
+		else
 		{
-			if (encLen > (int)sizeof(vb->video))
+
+			VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer(0);
+			if (vb)
 			{
-				kdDebug()  << "SIP: Encoded H.263 frame size is " << encLen << "; too big for buffer\n";
-				m_rtpVideo->freeVideoBuffer(vb);
-			}
-			else
-			{
-				memcpy(vb->video, encFrame, encLen); // Optimisation to get rid of this copy may be possible, check H.263 stack
-				vb->len = encLen;
-				vb->w = m_webcam->width();//176;
-				vb->h = m_webcam->height();//144;
-				if (!m_rtpVideo->queueVideo(vb))
+				if (encLen > (int)sizeof(vb->video))
 				{
-					kdDebug()  << "KonferencePart::TransmitLocalWebcamImage(): Could not queue RTP Video frame for transmission\n";
+					kdDebug()  << "SIP: Encoded H.263 frame size is " << encLen << "; too big for buffer\n";
 					m_rtpVideo->freeVideoBuffer(vb);
+				}
+				else
+				{
+					memcpy(vb->video, encFrame, encLen); // Optimisation to get rid of this copy may be possible, check H.263 stack
+					vb->len = encLen;
+					vb->w = m_webcam->width();//176;
+					vb->h = m_webcam->height();//144;
+					if (!m_rtpVideo->queueVideo(vb))
+					{
+						kdDebug()  << "KonferencePart::TransmitLocalWebcamImage(): Could not queue RTP Video frame for transmission\n";
+						m_rtpVideo->freeVideoBuffer(vb);
+					}
 				}
 			}
 		}
+		m_webcam->FreeVideoBuffer(m_txWebcamClient, yuvFrame);
 	}
-	m_webcam->FreeVideoBuffer(m_txWebcamClient, yuvFrame);
 }
 
 void KonferencePart::DrawLocalWebcamImage()
