@@ -286,7 +286,7 @@ void rtpAudio::PlayOutAudio()
 			if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER))
 			{
 				PlayLen = m_codec->Decode(JBuf->RtpData, spkBuffer[spkInBuffer], mLen, spkPower2);
-				kdDebug() << "spkPower: " << spkPower2 << endl;
+			//	kdDebug() << "spkPower: " << spkPower2 << endl;
 				//m = write(speakerFd, (uchar *)spkBuffer[spkInBuffer], PlayLen);
 				m_audioDevice->playFrame((uchar *)spkBuffer[spkInBuffer], PlayLen);
 			}
@@ -329,6 +329,7 @@ void rtpAudio::PlayOutAudio()
 			//
 			//	recordInPacket(SilenceBuffer, SilenceLen);
 			//}
+			pJitter->FreeJBuffer(JBuf);
 			break;
 
 		case JB_REASON_EMPTY: // nothing to do, just hope the driver playout buffer is full (since we can't tell!)
@@ -393,7 +394,7 @@ bool rtpAudio::fillPacketfromMic(RTPPACKET &RTPpacket)
 	else
 	{
 		RTPpacket.len = m_codec->Encode(buffer, RTPpacket.RtpData, txPCMSamplesPerPacket, spkPower2, gain);
-		kdDebug() << "micPower: " << spkPower2 << endl;
+//		kdDebug() << "micPower: " << spkPower2 << endl;
 	}
 
 	return true;
