@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>257</width>
-            <height>299</height>
+            <width>392</width>
+            <height>439</height>
         </rect>
     </property>
     <property name="caption">
@@ -30,7 +30,73 @@
                 <property name="name">
                     <cstring>unnamed</cstring>
                 </property>
-                <widget class="QButtonGroup" row="1" column="0">
+                <widget class="QLabel" row="1" column="0">
+                    <property name="name">
+                        <cstring>textLabel3_2_2</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Device</string>
+                    </property>
+                </widget>
+                <widget class="QLabel" row="0" column="0">
+                    <property name="name">
+                        <cstring>textLabel3_2</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Plugin</string>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="1" column="1">
+                    <item>
+                        <property name="text">
+                            <string>/dev/video0</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>m_device</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>3</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="editable">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QComboBox" row="0" column="1">
+                    <item>
+                        <property name="text">
+                            <string>Image</string>
+                        </property>
+                    </item>
+                    <item>
+                        <property name="text">
+                            <string>V4L</string>
+                        </property>
+                    </item>
+                    <property name="name">
+                        <cstring>m_pluginCombo</cstring>
+                    </property>
+                    <property name="enabled">
+                        <bool>true</bool>
+                    </property>
+                    <property name="editable">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QToolButton" row="1" column="2">
+                    <property name="name">
+                        <cstring>m_selectFileButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>...</string>
+                    </property>
+                </widget>
+                <widget class="QButtonGroup" row="2" column="0" rowspan="1" colspan="3">
                     <property name="name">
                         <cstring>m_previewGroup</cstring>
                     </property>
@@ -70,71 +136,6 @@
                         </widget>
                     </grid>
                 </widget>
-                <widget class="QLayoutWidget" row="0" column="0">
-                    <property name="name">
-                        <cstring>layout3</cstring>
-                    </property>
-                    <grid>
-                        <property name="name">
-                            <cstring>unnamed</cstring>
-                        </property>
-                        <widget class="QLabel" row="1" column="0">
-                            <property name="name">
-                                <cstring>textLabel3_2_2</cstring>
-                            </property>
-                            <property name="text">
-                                <string>Device</string>
-                            </property>
-                        </widget>
-                        <widget class="QLabel" row="0" column="0">
-                            <property name="name">
-                                <cstring>textLabel3_2</cstring>
-                            </property>
-                            <property name="text">
-                                <string>Plugin</string>
-                            </property>
-                        </widget>
-                        <widget class="QComboBox" row="1" column="1">
-                            <item>
-                                <property name="text">
-                                    <string>/dev/video0</string>
-                                </property>
-                            </item>
-                            <property name="name">
-                                <cstring>m_device</cstring>
-                            </property>
-                            <property name="sizePolicy">
-                                <sizepolicy>
-                                    <hsizetype>3</hsizetype>
-                                    <vsizetype>0</vsizetype>
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="editable">
-                                <bool>true</bool>
-                            </property>
-                        </widget>
-                        <widget class="QComboBox" row="0" column="1">
-                            <item>
-                                <property name="text">
-                                    <string>V4L</string>
-                                </property>
-                            </item>
-                            <item>
-                                <property name="text">
-                                    <string>Image</string>
-                                </property>
-                            </item>
-                            <property name="name">
-                                <cstring>m_pluginCombo</cstring>
-                            </property>
-                            <property name="editable">
-                                <bool>false</bool>
-                            </property>
-                        </widget>
-                    </grid>
-                </widget>
             </grid>
         </widget>
     </grid>
@@ -144,13 +145,13 @@
         <class>KonferenceVideoWidget</class>
         <header location="local">videowidget.h</header>
         <sizehint>
-            <width>176</width>
-            <height>144</height>
+            <width>352</width>
+            <height>288</height>
         </sizehint>
         <container>0</container>
         <sizepolicy>
-            <hordata>4</hordata>
-            <verdata>4</verdata>
+            <hordata>5</hordata>
+            <verdata>5</verdata>
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
         </sizepolicy>

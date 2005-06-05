@@ -36,8 +36,6 @@
 KonferenceWizard::KonferenceWizard(QWidget* parent = 0, const char* name)
 		: KWizard(parent, name,TRUE)
 {
-	m_finished = false;
-	
 	setCaption( i18n("Konference Wizard" ) );
 	m_page1 = new page1();
 	addPage(m_page1,i18n("Konference Configuration Wizard"));
@@ -54,6 +52,7 @@ KonferenceWizard::KonferenceWizard(QWidget* parent = 0, const char* name)
 	addPage(m_page3,i18n("Video"));
 	m_page4 = new page4();
 	addPage(m_page4,i18n("Audio"));
+	setFinishEnabled(m_page4, true);
 }
 
 void KonferenceWizard::slotNameChanged( const QString &k )
@@ -74,19 +73,27 @@ void KonferenceWizard::accept()
 {
 	//we save our settings...
 	KonferenceSettings::setName(m_page2->m_nameEdit->text());
-	//KonferenceSettings::setAudioPlugin(m_page2->m_audioPluginComboBox->currentText());
-	//KonferenceSettings::setInputDevice(m_page2->m_audioInputDeviceComboBox->currentText());
-	//KonferenceSettings::setOutputDevice(m_page2->m_audioOutputDeviceComboBox->currentText());
-	//KonferenceSettings::setVideoDevice(m_page2->m_videoComboBox->currentText());
+	if(m_page4->m_audioPluginComboBox->currentText() == "OSS")
+		KonferenceSettings::setAudioPlugin(KonferenceSettings::EnumAudioPlugin::OSS);
+	else
+		KonferenceSettings::setAudioPlugin(KonferenceSettings::EnumAudioPlugin::Arts);
+		
+	KonferenceSettings::setInputDevice(m_page4->m_audioInputDeviceComboBox->currentText());
+	KonferenceSettings::setOutputDevice(m_page4->m_audioOutputDeviceComboBox->currentText());
+	
+	if(m_page3->m_pluginCombo->currentText() == "V4L")
+		KonferenceSettings::setVideoPlugin(KonferenceSettings::EnumVideoPlugin::V4L);
+	else
+		KonferenceSettings::setVideoPlugin(KonferenceSettings::EnumVideoPlugin::Image);
+	
+	KonferenceSettings::setVideoDevice(m_page3->m_device->currentText());
+	
 	KonferenceSettings::writeConfig();
-	m_finished = true;
 	KWizard::accept();
 }
 
 void KonferenceWizard::reject()
 {
-	//TODO
-	m_finished = true;
 	KWizard::reject();
 }
 
@@ -104,6 +111,5 @@ void KonferenceWizard::back()
 
 KonferenceWizard::~KonferenceWizard()
 {}
-
 
 #include "wizard.moc"
