@@ -9,6 +9,9 @@
 		<entry name="historyList" type="StringList">
 		</entry>
 
+		<entry name="firstRun" type="Bool">
+		<default>true</default>
+		</entry>
 	</group>
 <group name="audio">
 		<entry name="audioPlugin" type="Enum">
@@ -17,6 +20,7 @@
 			<choice name="Arts"/>
 			<choice name="OSS"/>
 		</choices>
+		<default>Arts</default>
 		</entry>
 		
 		<entry name="outputMute" type="Bool">
@@ -59,6 +63,7 @@
 			<choice name="V4L"/>
 			<choice name="Image"/>
 		</choices>
+		<default>Image</default>
 		</entry>
 		
 		<entry name="videoDevice" type="String">
@@ -66,7 +71,7 @@
 		</entry>
 
 		<entry name="fakeDeviceImage" type="Path">
-		<default>$KDEDIR/share/apps/konferencepart/logo.png</default>
+		<default>$KDEDIR/share/apps/konference/logo.png</default>
 		</entry>
 
 		<entry name="videoReception" type="Bool">
