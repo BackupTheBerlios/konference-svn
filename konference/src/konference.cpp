@@ -21,6 +21,7 @@ Konference::Konference() : KParts::MainWindow( 0L, "Konference" )
 	// set the shell's ui resource file
 	setXMLFile("konference_shell.rc");
 
+	createStandardStatusBarAction();
 	// then, setup our actions
 	setupActions();
 
@@ -79,7 +80,7 @@ void Konference::setupActions()
 
 	KStdAction::quit(kapp, SLOT(quit()), actionCollection());
 
-	m_toolbarAction = KStdAction::showToolbar(this, SLOT(optionsShowToolbar()), actionCollection());
+//	m_toolbarAction = KStdAction::showToolbar(this, SLOT(optionsShowToolbar()), actionCollection());
 	m_statusbarAction = KStdAction::showStatusbar(this, SLOT(optionsShowStatusbar()), actionCollection());
 
 	KStdAction::keyBindings(this, SLOT(optionsConfigureKeys()), actionCollection());
