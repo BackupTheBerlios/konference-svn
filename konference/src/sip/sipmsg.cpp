@@ -172,9 +172,9 @@ void SipMsg::addFrom(SipUrl &from, QString tag, QString epid)
 	Msg += "\r\n";
 }
 
-void SipMsg::addCallId(SipCallId id)
+void SipMsg::addCallId(SipCallId *id)
 {
-	Msg += "Call-ID: " + id.string() + "\r\n";
+	Msg += "Call-ID: " + id->string() + "\r\n";
 }
 
 void SipMsg::addCSeq(int c)

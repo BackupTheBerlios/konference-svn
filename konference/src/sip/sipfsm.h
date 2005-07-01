@@ -97,6 +97,7 @@ private:
 
 
 // Events
+#define SIP_UNKNOWN             0x0
 #define SIP_OUTCALL             0x100
 #define SIP_INVITE              0x200
 #define SIP_INVITESTATUS_2xx    0x300
@@ -562,7 +563,7 @@ bool SocketOpenedOk() { return sipSocket != 0 ? true : false; }
 	void DestroyFsm(SipFsmBase *Fsm);
 	void CheckRxEvent();
 	SipCall *MatchCall(int cr);
-	SipFsmBase *MatchCallId(SipCallId &CallId);
+	SipFsmBase *MatchCallId(SipCallId *CallId);
 	SipCall *CreateCallFsm();
 	SipSubscriber *CreateSubscriberFsm();
 	SipWatcher *CreateWatcherFsm(QString Url);

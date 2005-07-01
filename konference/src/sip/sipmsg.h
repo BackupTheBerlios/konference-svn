@@ -49,7 +49,7 @@ public:
     void addToCopy(QString To)      { addGenericLine(To); }
     void addFromCopy(QString From)  { addGenericLine(From); }
     void addRRCopy(QString RR)      { addGenericLine(RR); }
-    void addCallId(SipCallId id);
+    void addCallId(SipCallId *id);
     void addCSeq(int c);
     void addContact(SipUrl contact, QString Methods="");
     void addUserAgent(QString ua="MythPhone");     
@@ -72,7 +72,7 @@ public:
     int getExpires() { return Expires; }
     int getStatusCode() { return statusCode; }
     QString getReasonPhrase() { return statusText; }
-    SipCallId &getCallId() { return *callId; }
+    SipCallId *getCallId() { return callId; }
     SipMsg &operator= (SipMsg &rhs);
     SipSdp *getSdp()         { return sdp; }
     SipXpidf *getXpidf()     { return xpidf; }

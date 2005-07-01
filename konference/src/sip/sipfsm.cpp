@@ -502,9 +502,9 @@ void SipThread::ChangePrimaryCallState(SipFsm *sipFsm, int NewState)
 		{
 			// No application running to tell of the incoming call
 			// Either alert via on-screen popup or send to voicemail
-//			SipNotify *notify = new SipNotify();
-//			notify->Display(callerName, callerUrl);
-//			delete notify;
+			//			SipNotify *notify = new SipNotify();
+			//			notify->Display(callerName, callerUrl);
+			//			delete notify;
 		}
 	}
 }
@@ -541,13 +541,13 @@ SipFsm::SipFsm(QWidget *parent, const char *name)
 	sipRegistrar = new SipRegistrar(this, "maldn", localIp, localPort);
 
 	// if Proxy Registration is configured ...
-	bool RegisterWithProxy = false;//TODO gContext->GetNumSetting("SipRegisterWithProxy",1);
+	bool RegisterWithProxy = true;//TODO gContext->GetNumSetting("SipRegisterWithProxy",1);
 	sipRegistration = 0;
 	if (RegisterWithProxy)
 	{
-		QString ProxyDNS = "fwd.pulver.com";//TODO gContext->GetSetting("SipProxyName");
-		QString ProxyUsername = "";//TODO gContext->GetSetting("SipProxyAuthName");
-		QString ProxyPassword = "";//TODO gContext->GetSetting("SipProxyAuthPassword");
+		QString ProxyDNS = "sipgate.de";//TODO gContext->GetSetting("SipProxyName");
+		QString ProxyUsername = "8925303";//TODO gContext->GetSetting("SipProxyAuthName");
+		QString ProxyPassword = "wonttellyou :-)";//TODO gContext->GetSetting("SipProxyAuthPassword");
 		if ((ProxyDNS.length() > 0) && (ProxyUsername.length() > 0) && (ProxyPassword.length() > 0))
 		{
 			sipRegistration = new SipRegistration(this, natIp, localPort, ProxyUsername, ProxyPassword, ProxyDNS, 5060);
@@ -845,6 +845,7 @@ void SipFsm::CheckRxEvent()
 		{
 			switch (Event)
 			{
+			case SIP_UNKNOWN:     fsm = 0;                       break;//ignore event
 			case SIP_REGISTER:    fsm = sipRegistrar;            break;
 			case SIP_SUBSCRIBE:   fsm = CreateSubscriberFsm();   break;
 			case SIP_MESSAGE:     fsm = CreateIMFsm();           break;
@@ -858,7 +859,7 @@ void SipFsm::CheckRxEvent()
 			if ((fsm->FSM(Event, &sipRcv)) == SIP_IDLE)
 				DestroyFsm(fsm);
 		}
-		else
+		else if (Event != SIP_UNKNOWN)
 			cerr << "SIP: fsm should not be zero here\n";
 	}
 }
@@ -916,7 +917,7 @@ int SipFsm::MsgToEvent(SipMsg *sipMsg)
 	}
 	else
 		cerr << "SIP: Unknown method " << Method << endl;
-	return 0;
+	return SIP_UNKNOWN;
 }
 
 SipCall *SipFsm::MatchCall(int cr)
@@ -928,17 +929,20 @@ SipCall *SipFsm::MatchCall(int cr)
 	return 0;
 }
 
-SipFsmBase *SipFsm::MatchCallId(SipCallId &CallId)
+SipFsmBase *SipFsm::MatchCallId(SipCallId *CallId)
 {
 	SipFsmBase *it;
 	SipFsmBase *match=0;
-	for (it=FsmList.first(); it; it=FsmList.next())
+	if (CallId != 0)
 	{
-		if (it->callId() == CallId.string())
+		for (it=FsmList.first(); it; it=FsmList.next())
 		{
-			if (match != 0)
-				cerr << "SIP: Oops; we have two FSMs with the same Call Id\n";
-			match = it;
+			if (it->callId() == CallId->string())
+			{
+				if (match != 0)
+					cerr << "SIP: Oops; we have two FSMs with the same Call Id\n";
+				match = it;
+			}
 		}
 	}
 	return match;
@@ -1010,7 +1014,7 @@ void SipFsm::SendIM(QString destUrl, QString CallId, QString imMsg)
 {
 	SipCallId sipCallId;
 	sipCallId.setValue(CallId);
-	SipFsmBase *Fsm = MatchCallId(sipCallId);
+	SipFsmBase *Fsm = MatchCallId(&sipCallId);
 	if ((Fsm) && (Fsm->type() == "IM"))
 	{
 		if ((Fsm->FSM(SIP_USER_MESSAGE, 0, &imMsg)) == SIP_IDLE)
@@ -1130,7 +1134,7 @@ void SipFsmBase::ParseSipMsg(int Event, SipMsg *sipMsg)
 		rxedFrom = sipMsg->getCompleteFrom();
 		RecRoute = sipMsg->getCompleteRR();
 		Via      = sipMsg->getCompleteVia();
-		CallId   = sipMsg->getCallId();
+		CallId   = *(sipMsg->getCallId());
 		viaIp    = sipMsg->getViaIp();
 		viaPort  = sipMsg->getViaPort();
 		if (remoteUrl == 0)
@@ -1173,7 +1177,7 @@ void SipFsmBase::BuildSendStatus(int Code, QString Method, int statusCseq, int O
 		Status.addViaCopy(Via);
 	Status.addFromCopy(rxedFrom);
 	Status.addToCopy(rxedTo);
-	Status.addCallId(CallId);
+	Status.addCallId(&CallId);
 	Status.addCSeq(statusCseq);
 	if ((Option & SIP_OPT_EXPIRES) && (statusExpires >= 0))
 		Status.addExpires(statusExpires);
@@ -1330,7 +1334,7 @@ void SipCall::initialise()
 	CodecList[0].Payload = 0;
 	CodecList[0].Encoding = "PCMU";
 	int n=0;
-	QString CodecListString = "GSM;G.711u;G.711a";//TODO gContext->GetSetting("CodecPriorityList");
+	QString CodecListString = "G.711u;G.711a;GSM";//TODO gContext->GetSetting("CodecPriorityList");
 	while ((CodecListString.length() > 0) && (n < MAX_AUDIO_CODECS-1))
 	{
 		int sep = CodecListString.find(';');
@@ -1648,7 +1652,7 @@ void SipCall::BuildSendInvite(SipMsg *authMsg)
 	Invite.addVia(sipLocalIP, sipLocalPort);
 	Invite.addFrom(*MyUrl, "ae1d8a43cf3f4d8a8f4f0e1004", "3622b728e3");
 	Invite.addTo(*remoteUrl);
-	Invite.addCallId(CallId);
+	Invite.addCallId(&CallId);
 	Invite.addCSeq(++cseq);
 	Invite.addUserAgent();
 
@@ -1710,7 +1714,7 @@ void SipCall::BuildSendAck()
 	Ack.addVia(sipLocalIP, sipLocalPort);
 	Ack.addFrom(*MyUrl, "ae1d8a43cf3f4d8a8f4f0e1004", "3622b728e3");
 	Ack.addTo(*remoteUrl, remoteTag);
-	Ack.addCallId(CallId);
+	Ack.addCallId(&CallId);
 	Ack.addCSeq(cseq);
 	Ack.addUserAgent();
 	Ack.addNullContent();
@@ -1735,7 +1739,7 @@ void SipCall::BuildSendCancel(SipMsg *authMsg)
 	Cancel.addVia(sipLocalIP, sipLocalPort);
 	Cancel.addTo(*remoteUrl, remoteTag);
 	Cancel.addFrom(*MyUrl);
-	Cancel.addCallId(CallId);
+	Cancel.addCallId(&CallId);
 	Cancel.addCSeq(cseq);
 	Cancel.addUserAgent();
 
@@ -1786,7 +1790,7 @@ void SipCall::BuildSendBye(SipMsg *authMsg)
 		Bye.addFrom(*MyUrl);
 		Bye.addTo(*remoteUrl, remoteTag);
 	}
-	Bye.addCallId(CallId);
+	Bye.addCallId(&CallId);
 	Bye.addCSeq(++cseq);
 	Bye.addUserAgent();
 
@@ -2244,7 +2248,7 @@ void SipRegistration::SendRegister(SipMsg *authMsg)
 	Register.addVia(sipLocalIp, sipLocalPort);
 	Register.addFrom(*MyUrl);
 	Register.addTo(*MyUrl);
-	Register.addCallId(CallId);
+	Register.addCallId(&CallId);
 	Register.addCSeq(++cseq);
 
 	if (authMsg && (authMsg->getAuthMethod() == "Digest"))
@@ -2379,7 +2383,7 @@ void SipSubscriber::SendNotify(SipMsg *authMsg)
 	Notify.addVia(sipLocalIp, sipLocalPort);
 	Notify.addFrom(*MyUrl);
 	Notify.addTo(*watcherUrl, remoteTag, remoteEpid);
-	Notify.addCallId(CallId);
+	Notify.addCallId(&CallId);
 	Notify.addCSeq(++cseq);
 	int expLeft = (parent->Timer())->msLeft(this, SIP_SUBSCRIBE_EXPIRE)/1000;
 	Notify.addExpires(expLeft);
@@ -2616,7 +2620,7 @@ void SipWatcher::SendSubscribe(SipMsg *authMsg)
 	Subscribe.addVia(sipLocalIp, sipLocalPort);
 	Subscribe.addFrom(*MyUrl);
 	Subscribe.addTo(*watchedUrl);
-	Subscribe.addCallId(CallId);
+	Subscribe.addCallId(&CallId);
 	Subscribe.addCSeq(++cseq);
 	if (State == SIP_WATCH_STOPPING)
 		Subscribe.addExpires(0);
@@ -2773,7 +2777,7 @@ void SipIM::SendMessage(SipMsg *authMsg, QString Text)
 	Message.addVia(sipLocalIp, sipLocalPort);
 	Message.addFrom(*MyUrl);
 	Message.addTo(*imUrl, remoteTag, remoteEpid);
-	Message.addCallId(CallId);
+	Message.addCallId(&CallId);
 	Message.addCSeq(++txCseq);
 
 	if (authMsg)
@@ -2827,7 +2831,7 @@ SipNotify::SipNotify()
 	}
 	//    notifySocket->close();
 }
-
+ 
 SipNotify::~SipNotify()
 {
 	if (notifySocket)
@@ -2835,9 +2839,9 @@ SipNotify::~SipNotify()
 		delete notifySocket;
 		notifySocket = 0;
 	}
-
+ 
 }
-
+ 
 void SipNotify::Display(QString name, QString number)
 {
 	if (notifySocket)
@@ -2857,13 +2861,13 @@ void SipNotify::Display(QString name, QString number)
 		        "    </textarea>"
 		        "  </container>"
 		        "</mythnotify>";
-
+ 
 		QHostAddress RemoteIP;
 		RemoteIP.setAddress("127.0.0.1");
 		notifySocket->writeBlock(text.ascii(), text.length(), RemoteIP, 6948);
 	}
 }
-
+ 
 */
 
 /**********************************************************************
