@@ -315,11 +315,21 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 	//we do this here, so that we have more control over the audio-codec
 	// may be usefull for changing quality etc.
 	if (audioPayload == RTP_PAYLOAD_G711U)
+	{
+		kdDebug() << "using g711ulaw" << endl;
+
 		m_audioCodec = new g711ulaw();
+	}
 	else if (audioPayload == RTP_PAYLOAD_G711A)
+	{
+		kdDebug() << "using g711alaw" << endl;
 		m_audioCodec = new g711alaw();
+	}
 	else if (audioPayload == RTP_PAYLOAD_GSM)
+	{
+		kdDebug() << "using gsm" << endl;
 		m_audioCodec = new gsmCodec();
+	}
 	else
 	{
 		kdDebug() << "Unknown audio payload " << audioPayload << endl;
