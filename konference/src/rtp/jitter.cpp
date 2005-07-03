@@ -63,7 +63,8 @@ RTPPACKET *Jitter::GetJBuffer()
 
 
 void Jitter::FreeJBuffer(RTPPACKET *Buf)
-{
+{	
+	//cout << "Jitter::FreeJBuffer(RTPPACKET *Buffer)" << endl;
 	FreeJitterQ.append(Buf);
 }
 
@@ -77,6 +78,7 @@ void Jitter::InsertDTMF(RTPPACKET *Buffer)
 
 void Jitter::InsertJBuffer(RTPPACKET *Buffer)
 {
+	//cout << "Jitter::InsertJBuffer(RTPPACKET *Buffer)" << endl;
 	if (count() == 0)
 		append(Buffer);
 	else

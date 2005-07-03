@@ -48,7 +48,7 @@
 #include "codecs/gsmcodec.h"
 #include "codecs/g711.h"
 #include "codecs/h263.h"
-#include "sip/sipfsm.h"
+#include "sip/sipcontainer.h"
 #include "audio/oss.h"
 #include "audio/alsa.h"
 #include "audio/audioarts.h"
@@ -81,8 +81,9 @@ KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
 		showWizard();
 	}
 
-	sipStack = new SipContainer();
+	sipStack = new SipContainer(this);
 	//tell it that we want to receive the events
+	//deprecated, should disapear
 	sipStack->UiOpened(this);
 
 	int resolutionShift = KonferenceSettings::videoSize();

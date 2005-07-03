@@ -12,7 +12,14 @@
       <keyword>Qt</keyword>
       <keyword>KDE</keyword>
     </keywords>
-    <ignoreparts/>
+    <ignoreparts>
+      <part>kdevdebugger</part>
+      <part>kdevkonsoleview</part>
+      <part>kdevregexptest</part>
+      <part>kdevreplace</part>
+      <part>kdevscripting</part>
+      <part>kdevvalgrind</part>
+    </ignoreparts>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
     <description/>
@@ -20,8 +27,9 @@
   </general>
   <kdevautoproject>
     <general>
-      <activetarget>src/dialogs/wizard/libwizard.la</activetarget>
+      <activetarget>src/sip/libsip.la</activetarget>
       <useconfiguration>debug</useconfiguration>
+      <useactivetarget>true</useactivetarget>
     </general>
     <run>
       <mainprogram>src/konference</mainprogram>

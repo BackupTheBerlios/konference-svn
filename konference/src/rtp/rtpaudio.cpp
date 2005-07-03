@@ -261,18 +261,19 @@ void rtpAudio::StreamInAudio()
 
 }
 
+
 void rtpAudio::PlayOutAudio()
 {
 	bool tryAgain;
 	int mLen, m, reason;
-
+ 
 	// Implement a playout de-jitter delay
 	if (PlayoutDelay > 0)
 	{
 		PlayoutDelay--;
 		return;
 	}
-
+ 
 	// Now process buffers from the Jitter Buffer
 	do
 	{
@@ -286,7 +287,7 @@ void rtpAudio::PlayOutAudio()
 			if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER))
 			{
 				PlayLen = m_codec->Decode(JBuf->RtpData, spkBuffer[spkInBuffer], mLen, spkPower2);
-			//	kdDebug() << "spkPower: " << spkPower2 << endl;
+				//	kdDebug() << "spkPower: " << spkPower2 << endl;
 				//m = write(speakerFd, (uchar *)spkBuffer[spkInBuffer], PlayLen);
 				m_audioDevice->playFrame((uchar *)spkBuffer[spkInBuffer], PlayLen);
 			}
@@ -296,53 +297,62 @@ void rtpAudio::PlayOutAudio()
 			//{
 			//	PlayLen = m_codec->Decode(JBuf->RtpData, SpkBuffer[spkInBuffer], mLen, spkPower2);
 			//	recordInPacket(SpkBuffer[spkInBuffer], PlayLen);
+			//	cout << "rxMode == RTP_RX_AUDIO_TO_BUFFER" << endl;
 			//}
-			rxTimestamp += mLen;//TODO increasing the timestamp by a length of data??
+			//rxTimestamp += mLen;//TODO increasing the timestamp by a length of data??
+			//pJitter->FreeJBuffer(JBuf);
+ 
+// rxMode is RTP_RX_AUDIO_DISCARD
+			else
+{}
 			pJitter->FreeJBuffer(JBuf);
-			break;
-
-		case JB_REASON_DUPLICATE: // This should not happen; but it does, especially with DTMF frames!
-			if (JBuf != 0)
+				break
+;
+			case JB_REASON_DUPLICATE: // This should not happen; but it does, especially with DTMF frames!
+				if (JBuf != 0)
+					pJitter->FreeJBuffer(JBuf);
+				tryAgain = true;
+				break;
+ 
+			case JB_REASON_DTMF:
+				++rxSeqNum;
 				pJitter->FreeJBuffer(JBuf);
-			tryAgain = true;
-			break;
-
-		case JB_REASON_DTMF:
-			++rxSeqNum;
-			pJitter->FreeJBuffer(JBuf);
-			tryAgain = true;
-			break;
-
-			// This may just be because we are putting frames into the driver too early, but no way to tell
-		case JB_REASON_MISSING:
-			rxSeqNum++;
-			memset(SilenceBuffer, 0, sizeof(SilenceBuffer));
-			SilenceLen = rxPCMSamplesPerPacket * sizeof(short);
-			if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER))
-			{
-				m_audioDevice->playFrame((uchar *)SilenceBuffer, SilenceLen);
-				//m = write(speakerFd, (uchar *)SilenceBuffer, SilenceLen);
+				tryAgain = true;
+				break;
+ 
+				// This may just be because we are putting frames into the driver too early, but no way to tell
+			case JB_REASON_MISSING:
+				rxSeqNum++;
+				memset(SilenceBuffer, 0, sizeof(SilenceBuffer));
+				SilenceLen = rxPCMSamplesPerPacket * sizeof(short);
+				if ((rxMode == RTP_RX_AUDIO_TO_SPEAKER))
+				{
+					m_audioDevice->playFrame((uchar *)SilenceBuffer, SilenceLen);
+					//m = write(speakerFd, (uchar *)SilenceBuffer, SilenceLen);
+				}
+				//TODO see above
+				else if (rxMode == RTP_RX_AUDIO_TO_BUFFER)
+				{
+				rxMode = RTP_RX_AUDIO_DISCARD;
+				kdDebug() << "rxMode == RTP_RX_AUDIO_TO_BUFFER" << endl;
+				//
+				//	recordInPacket(SilenceBuffer, SilenceLen);
+				}
+				pJitter->FreeJBuffer(JBuf);
+				break;
+ 
+			case JB_REASON_EMPTY: // nothing to do, just hope the driver playout buffer is full (since we can't tell!)
+				break;
+			case JB_REASON_SEQERR:
+			default:
+				//kdDebug() << "Something funny happened with the seq numbers, should reset them & start again\n";
+				break;
 			}
-			//TODO see above
-			//else if (rxMode == RTP_RX_AUDIO_TO_BUFFER)
-			//{
-			//
-			//	recordInPacket(SilenceBuffer, SilenceLen);
-			//}
-			pJitter->FreeJBuffer(JBuf);
-			break;
-
-		case JB_REASON_EMPTY: // nothing to do, just hope the driver playout buffer is full (since we can't tell!)
-			break;
-		case JB_REASON_SEQERR:
-		default:
-			//kdDebug() << "Something funny happened with the seq numbers, should reset them & start again\n";
-			break;
 		}
+		while (tryAgain);
+ 
 	}
-	while (tryAgain);
 
-}
 
 void rtpAudio::HandleRxDTMF(RTPPACKET *RTPpacket)
 {
@@ -394,7 +404,7 @@ bool rtpAudio::fillPacketfromMic(RTPPACKET &RTPpacket)
 	else
 	{
 		RTPpacket.len = m_codec->Encode(buffer, RTPpacket.RtpData, txPCMSamplesPerPacket, spkPower2, gain);
-//		kdDebug() << "micPower: " << spkPower2 << endl;
+		//		kdDebug() << "micPower: " << spkPower2 << endl;
 	}
 
 	return true;
