@@ -32,6 +32,7 @@
 #define RTP_PAYLOAD_G711A		0x08
 #define RTP_PAYLOAD_COMF_NOISE	0x0D
 #define RTP_PAYLOAD_GSM			0x03
+#define RTP_PAYLOAD_SPEEX		0x61
 #define PAYLOAD(r)				(((r)->RtpMPT) & (~RTP_PAYLOAD_MARKER_BIT))
 
 #include "jitter.h"

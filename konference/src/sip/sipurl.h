@@ -22,9 +22,6 @@
 
 #include <qstring.h>
 
-/**
-@author Malte Böhme
-*/
 class SipUrl
 {
 public:

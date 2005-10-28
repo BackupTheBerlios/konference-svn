@@ -43,7 +43,7 @@ class audioBase;
 class KonferenceUI;
 class KonferenceWizard;
 #include "dcopiface.h"
-
+#include "rtp/rtpvideo.h"
 /**
  * This is a "Part".  It that does all the real work in a KPart
  * application.
@@ -78,7 +78,7 @@ public:
 	*/
 	virtual void call(const QString &ip);
 	//dcop stuff ends here
-	
+
 protected:
 	/**
 	 * This must be implemented by each part
@@ -92,7 +92,7 @@ protected slots:
 	void showConfigDialog();
 
 	void showWizard();
-	
+
 	/**
 	 * Reloads the configuration
 	 */
@@ -150,7 +150,7 @@ private:
 	 * Our wizard
 	 */
 	KonferenceWizard *m_wizard;
-	
+
 	/**
 	 * This handles the grabbing from our cam. if there is a new frame our part get an event.
 	 */
@@ -177,7 +177,6 @@ private:
 
 	rtpVideo *m_rtpVideo;
 	rtpAudio *m_rtpAudio;
-
 	wcClient *m_localWebcamClient;
 	wcClient *m_txWebcamClient;
 

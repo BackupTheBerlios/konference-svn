@@ -38,7 +38,6 @@
 #define JB_REASON_DTMF        4   // Buffer which matches seq-number contained DTMF
 #define JB_REASON_DUPLICATE   5   // Got the same sequence number twice
 
-
 typedef struct RTPPACKET
 {
   int     len;                       // Not part of the RTP frame itself
@@ -64,7 +63,7 @@ public:
     void		InsertJBuffer(RTPPACKET *Buffer);
     RTPPACKET *DequeueJBuffer(ushort seqNum, int &reason);  
     int     DumpAllJBuffers(bool StopAtMarkerBit);
-    virtual int compareItems(QPtrCollection::Item s1, QPtrCollection::Item s2);
+   // virtual int compareItems(QPtrCollection::Item s1, QPtrCollection::Item s2);
     int AnyData() { return count(); };
     bool isPacketQueued(ushort Seq);
     int GotAllBufsInFrame(ushort seq, int offset);

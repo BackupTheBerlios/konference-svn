@@ -30,12 +30,12 @@
 class codecBase
 {
 public:
-    codecBase();
+	codecBase();
 	virtual ~codecBase();
-    virtual int Decode(uchar *In, short *out, int Len, short &maxPower)=0;
-    virtual int Encode(short *In, uchar *out, int Samples, short &maxPower, int gain)=0;
-    virtual int Silence(uchar *out, int ms)=0;
-    virtual QString getCodecName()=0;
+	virtual int Decode(uchar *In, short *out, int Len, short &maxPower)=0;
+	virtual int Encode(short *In, uchar *out, int Samples, short &maxPower, int gain)=0;
+	virtual int Silence(uchar *out, int ms)=0;
+	virtual QString getCodecName()=0;
 	virtual int getPayload()=0;
 };
 

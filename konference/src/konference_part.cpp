@@ -47,6 +47,7 @@
 #include "codecs/codecbase.h"
 #include "codecs/gsmcodec.h"
 #include "codecs/g711.h"
+#include "codecs/speexcodec.h"
 #include "codecs/h263.h"
 #include "sip/sipcontainer.h"
 #include "audio/oss.h"
@@ -55,6 +56,11 @@
 #include "konferenceui.h"
 #include "dialogs/wizard/wizard.h"
 
+#define RTP_PAYLOAD_G711U		0x00
+#define RTP_PAYLOAD_G711A		0x08
+#define RTP_PAYLOAD_COMF_NOISE	0x0D
+#define RTP_PAYLOAD_GSM			0x03
+#define RTP_PAYLOAD_SPEEX		0x61
 
 KonferencePart::KonferencePart( QWidget *parentWidget, const char *widgetName,
                                 QObject *parent, const char *name )
@@ -216,6 +222,8 @@ void KonferencePart::ProcessSipNotification()
 				}
 			default:
 				kdDebug() << "		DEFAULT:" << NotifyParam2 << endl;
+				kdDebug() << "		DEFAULT:" << NotifyParam1 << endl;
+				kdDebug() << "		DEFAULT:" << NotifyUrl << endl;
 				break;
 			}
 		}
@@ -338,6 +346,11 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 		m_audioCodec = new g711ulaw();
 	}
 
+	//speex-testing
+	kdDebug() << "using speex codec" << endl;
+	audioPayload = RTP_PAYLOAD_SPEEX;
+	m_audioCodec = new speexCodec();
+
 	if(KonferenceSettings::audioPlugin() == KonferenceSettings::EnumAudioPlugin::OSS)
 	{
 		kdDebug() << "using OSS driver" << endl;
@@ -358,10 +371,12 @@ void KonferencePart::startAudioRTP(QString remoteIP, int remoteAudioPort, int au
 		m_audioDevice->openDevice("plughw:0,0");
 	}
 
+	//m_rtpAudio = new rtpAudio(KonferenceSettings::localAudioPort(), remoteIP,
+	//                          remoteAudioPort, audioPayload, dtmfPayload,
+	//                          m_audioCodec, m_audioDevice);
 	m_rtpAudio = new rtpAudio(KonferenceSettings::localAudioPort(), remoteIP,
-	                          remoteAudioPort, audioPayload, dtmfPayload,
-	                          m_audioCodec, m_audioDevice);
-
+	                          remoteAudioPort,  m_audioCodec, m_audioDevice);
+	 
 	//kdDebug() << "dtmfpayload: " << dtmfPayload << endl;
 }
 
@@ -408,8 +423,7 @@ void KonferencePart::startVideoRTP(QString remoteIP, int remoteVideoPort, int vi
 
 	h263->H263StartEncoder(m_webcam->width(), m_webcam->height(), 5);
 	h263->H263StartDecoder(w, h);
-	m_rtpVideo = new rtpVideo (this, KonferenceSettings::localVideoPort(), remoteIP,
-	                           remoteVideoPort, videoPayload,RTP_TX_VIDEO, RTP_RX_VIDEO);
+	m_rtpVideo = new rtpVideo(this,KonferenceSettings::localVideoPort(), remoteIP,remoteVideoPort, videoPayload,5.0);
 }
 
 void KonferencePart::stopVideoRTP()
@@ -418,32 +432,23 @@ void KonferencePart::stopVideoRTP()
 
 	h263->H263StopEncoder();
 	h263->H263StopDecoder();
-	if(m_rtpVideo)
-		delete m_rtpVideo;
-	m_rtpVideo = 0;
+	m_rtpVideo->stop();
+	delete m_rtpVideo;
 }
 
 void KonferencePart::ProcessRxVideoFrame()
 {
-	VIDEOBUFFER *v;
+	VIDEOBUFFER v;
+	m_rtpVideo->getReceivedFrame(&v);
 
-	//kdDebug() << "KonferencePart::ProcessRxVideoFrame()" << endl;
-
-	//TODO always true, isnt it?
-	if (m_rtpVideo && (v = m_rtpVideo->getRxedVideo()))
+	//kdDebug() << "====> v.h=" << v.h << " v.w=" << v.w << "v.len=" << v.len << endl;
+	uchar *decRgbFrame = h263->H263DecodeFrame(v.video, v.len, rxRgbBuffer, sizeof(rxRgbBuffer));
+	if (decRgbFrame)
 	{
-		//kdDebug() << "rtpVideo && (v = rtpVideo->getRxedVideo())" << endl;
-
-		uchar *decRgbFrame = h263->H263DecodeFrame(v->video, v->len, rxRgbBuffer, sizeof(rxRgbBuffer));
-		if (decRgbFrame)
-		{
-			//kdDebug() << "if (decRgbFrame)" << endl;
-
-			QImage rxImage(rxRgbBuffer, v->w, v->h, 32, (QRgb *)0, 0, QImage::LittleEndian);
-			KonferenceNewImageEvent* ce = new KonferenceNewImageEvent( rxImage, KonferenceNewImageEvent::REMOTE );
-			QApplication::postEvent( m_widget, ce );  // Qt will delete the event when done-
-		}
-		m_rtpVideo->freeVideoBuffer(v);
+		//kdDebug() << "if (decRgbFrame)" << endl;
+		QImage rxImage(rxRgbBuffer, v.w, v.h, 32, (QRgb *)0, 0, QImage::LittleEndian);
+		KonferenceNewImageEvent* ce = new KonferenceNewImageEvent( rxImage, KonferenceNewImageEvent::REMOTE );
+		QApplication::postEvent( m_widget, ce );  // Qt will delete the event when done-
 	}
 }
 
@@ -452,7 +457,7 @@ void KonferencePart::TransmitLocalWebcamImage()
 	uchar *yuvFrame = m_webcam->GetVideoFrame(m_txWebcamClient);
 
 	int encLen=0;
-	if (yuvFrame != 0 && m_rtpVideo)
+	if ((yuvFrame != 0)/* && m_rtpVideo2*/)
 	{
 		//TODO find better fix for odd quickcam resolutions
 		int txWidth = m_webcam->width();//176;
@@ -472,27 +477,28 @@ void KonferencePart::TransmitLocalWebcamImage()
 		else
 		{
 
-			VIDEOBUFFER *vb = m_rtpVideo->getVideoBuffer(0);
-			if (vb)
+			VIDEOBUFFER *vb = new VIDEOBUFFER;// = m_rtpVideo->getVideoBuffer(0);
+			//if (vb)
+			//{
+			if (encLen > (int)sizeof(vb->video))
 			{
-				if (encLen > (int)sizeof(vb->video))
-				{
-					kdDebug()  << "SIP: Encoded H.263 frame size is " << encLen << "; too big for buffer\n";
-					m_rtpVideo->freeVideoBuffer(vb);
-				}
-				else
-				{
-					memcpy(vb->video, encFrame, encLen); // Optimisation to get rid of this copy may be possible, check H.263 stack
-					vb->len = encLen;
-					vb->w = m_webcam->width();//176;
-					vb->h = m_webcam->height();//144;
-					if (!m_rtpVideo->queueVideo(vb))
-					{
-						kdDebug()  << "KonferencePart::TransmitLocalWebcamImage(): Could not queue RTP Video frame for transmission\n";
-						m_rtpVideo->freeVideoBuffer(vb);
-					}
-				}
+				kdDebug()  << "Encoded H.263 frame size is " << encLen << "; too big for buffer\n";
+				//m_rtpVideo->freeVideoBuffer(vb);
 			}
+			else
+			{
+				memcpy(vb->video, encFrame, encLen); // Optimisation to get rid of this copy may be possible, check H.263 stack
+				vb->len = encLen;
+				vb->w = m_webcam->width();//176;
+				vb->h = m_webcam->height();//144;
+				m_rtpVideo->queueVideoForTransmission(vb);
+				//if (!m_rtpVideo->queueVideo(vb))
+				//{
+				//	kdDebug()  << "KonferencePart::TransmitLocalWebcamImage(): Could not queue RTP Video frame for transmission\n";
+				//m_rtpVideo->freeVideoBuffer(vb);
+				//}
+			}
+			//}
 		}
 		m_webcam->FreeVideoBuffer(m_txWebcamClient, yuvFrame);
 	}
@@ -594,8 +600,8 @@ void KonferencePart::addToHistory( const KURL &address )
 void KonferencePart::connectClicked()
 {//TODO enabling buttons needs fix
 	//TODO Mode not used?
-	kdDebug() << "moooh" << endl;
-	sipStack->PlaceNewCall("CIF", m_location->currentText(), "", 1);
+	//kdDebug() << "moooh" << endl;
+	sipStack->PlaceNewCall("QCIF", m_location->currentText(), "mooh", 1);
 	m_cancelAction->setEnabled(true);
 	m_connectAction->setEnabled(false);
 	addToHistory(KURL(m_location->currentText()));

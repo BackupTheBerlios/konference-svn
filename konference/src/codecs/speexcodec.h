@@ -20,7 +20,7 @@
 #ifndef SPEEXCODEC_H
 #define SPEEXCODEC_H
 
-//#include <speex.h>
+#include <speex/speex.h>
 
 #include "codecbase.h"
 
@@ -30,10 +30,27 @@
 class speexCodec : public codecBase
 {
 public:
-    speexCodec();
+	speexCodec();
 
-    ~speexCodec();
+	~speexCodec();
+	//reimplemented from base-class
+	QString getCodecName(){return "speex";};
+	int getPayload(){return 0x61;};
+	int Decode(uchar *In, short *out, int Len, short &maxPower);
+	int Encode(short *In, uchar *out, int Samples, short &maxPower, int gain);
+	int Silence(uchar *out, int ms);
 
+private:
+	//encoder
+	SpeexBits m_encSpeexBits;
+	void *m_encState;
+	int m_encFrameSize;
+
+	//decoder
+	SpeexBits m_decSpeexBits;
+	void *m_decState;
+	int m_decFrameSize;
+	//short faketmp[320];
 };
 
 #endif

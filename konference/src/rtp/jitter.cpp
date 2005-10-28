@@ -98,14 +98,14 @@ void Jitter::InsertJBuffer(RTPPACKET *Buffer)
 	}
 }
 
-
+/*
 int Jitter::compareItems(QPtrCollection::Item s1, QPtrCollection::Item s2)
 {
 	RTPPACKET *r1 = (RTPPACKET *)s1;
 	RTPPACKET *r2 = (RTPPACKET *)s2;
 	return (r1->RtpSequenceNumber - r2->RtpSequenceNumber);
 }
-
+*/
 
 RTPPACKET *Jitter::DequeueJBuffer(ushort seqNum, int &reason)
 {

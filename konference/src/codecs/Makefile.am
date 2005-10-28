@@ -7,4 +7,4 @@ libcodecs_la_SOURCES = h263.cpp g711.cpp g711tabs.cpp codecbase.cpp \
 	gsmcodec.cpp speexcodec.cpp
 SUBDIRS = gsm
 
-libcodecs_la_LIBADD = $(top_builddir)/src/codecs/gsm/libgsm.la
+libcodecs_la_LIBADD = $(top_builddir)/src/codecs/gsm/libgsm.la -lspeex

@@ -1,6 +1,6 @@
 # set the include path for X, qt and KDE
 INCLUDES = -I$(top_srcdir)/src/dialogs -I$(top_srcdir)/src/dialogs/config \
-	-I$(top_srcdir)/src/dialogs/wizard $(all_includes)
+	-I$(top_srcdir)/src/dialogs/wizard -I$(top_srcdir)/src/rtp/jrtplib $(all_includes)
 
 # these are the headers for your project
 noinst_HEADERS = konference.h konference_part.h videowidget.h konferenceui.h \
